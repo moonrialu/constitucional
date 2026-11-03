@@ -18,6 +18,13 @@ class MutationController extends ChangeNotifier {
   MutationProgress get data => _data;
   bool get ready => _ready;
 
+  String get userName => _data.userName;
+
+  bool get hasName => _data.userName.trim().isNotEmpty;
+
+  /// Nome usado nos diálogos; cai para uma saudação neutra quando vazio.
+  String get displayName => hasName ? _data.userName : 'assessor(a)';
+
   MutationStep get currentStep =>
       mutationFlow[_data.stepIndex.clamp(0, mutationFlow.length - 1)];
 
@@ -123,15 +130,29 @@ class MutationController extends ChangeNotifier {
       _data = loaded.stepIndex >= mutationFlow.length
           ? loaded.copyWith(stepIndex: 0)
           : loaded;
+      if (_data.version != MutationProgress.currentVersion) {
+        _data = _data.copyWith(version: MutationProgress.currentVersion);
+        await _storage.save(_data);
+      }
     }
     _ready = true;
     notifyListeners();
+  }
+
+  /// Guarda o nome informado no onboarding, sem iniciar a jornada.
+  Future<void> setUserName(String name) async {
+    final clean = name.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (clean.isEmpty) return;
+    await _update(
+      _data.copyWith(userName: clean, version: MutationProgress.currentVersion),
+    );
   }
 
   /// Inicia do zero, na tela de objetivos (a capa fica no app).
   Future<void> startJourney() async {
     await _update(
       MutationProgress(
+        userName: _data.userName,
         stepIndex: 1,
         startedAt: _clock(),
         caseAnswers: const {},

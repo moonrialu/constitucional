@@ -11,6 +11,7 @@ import 'content.dart' show AuthorCard, InfoBox;
 enum MutationStepKind {
   cover,
   objectives,
+  training,
   caseStudy,
   caseFeedback,
   theory,
@@ -32,18 +33,22 @@ class MutationStep {
   final String? caseId;
 }
 
-/// Estrutura do roteiro: 16 telas na ordem do PDF.
+/// Estrutura do roteiro: explicação primeiro, dinâmica depois.
+///
+/// A fase de treinamento (visual novel) ocupa as telas 3 a 5 e substitui as
+/// antigas telas de teoria. Os casos e o teste final vêm na sequência.
 const List<MutationStep> mutationFlow = [
   MutationStep('cover', MutationStepKind.cover),
   MutationStep('objectives', MutationStepKind.objectives),
+  MutationStep('training1', MutationStepKind.training, caseId: 'training1'),
+  MutationStep('training2', MutationStepKind.training, caseId: 'training2'),
+  MutationStep('training3', MutationStepKind.training, caseId: 'training3'),
   MutationStep('case1', MutationStepKind.caseStudy, caseId: 'case1'),
   MutationStep(
     'case1-feedback',
     MutationStepKind.caseFeedback,
     caseId: 'case1',
   ),
-  MutationStep('theory1', MutationStepKind.theory, caseId: 'theory1'),
-  MutationStep('theory2', MutationStepKind.theory, caseId: 'theory2'),
   MutationStep('check2', MutationStepKind.check, caseId: 'check2'),
   MutationStep(
     'check2-feedback',
@@ -56,7 +61,6 @@ const List<MutationStep> mutationFlow = [
     MutationStepKind.caseFeedback,
     caseId: 'case3',
   ),
-  MutationStep('theory3', MutationStepKind.theory, caseId: 'theory3'),
   MutationStep('case4', MutationStepKind.caseStudy, caseId: 'case4'),
   MutationStep(
     'case4-feedback',
@@ -67,6 +71,61 @@ const List<MutationStep> mutationFlow = [
   MutationStep('diagnosis', MutationStepKind.diagnosis),
   MutationStep('credits', MutationStepKind.credits),
 ];
+
+/// Mentor do treinamento. A cor e o avatar são definidos na interface.
+class MentorProfile {
+  const MentorProfile({
+    required this.id,
+    required this.name,
+    required this.role,
+    required this.initials,
+    required this.trait,
+  });
+
+  final String id;
+  final String name;
+  final String role;
+  final String initials;
+
+  /// Jeito de falar, usado como legenda do balão.
+  final String trait;
+}
+
+/// Uma fala do treinamento. `mentorId` nulo representa narração.
+class DialogueLine {
+  const DialogueLine({this.mentorId, required this.text, this.emphasis});
+
+  final String? mentorId;
+  final String text;
+
+  /// Etiqueta curta que resume a ideia da fala.
+  final String? emphasis;
+}
+
+/// Um ato da fase de treinamento em estilo visual novel.
+class TrainingAct {
+  const TrainingAct({
+    required this.id,
+    required this.number,
+    required this.title,
+    required this.subtitle,
+    required this.lines,
+    required this.summaryTitle,
+    required this.summaryBullets,
+    required this.nextLabel,
+  });
+
+  final String id;
+  final String number;
+  final String title;
+  final String subtitle;
+  final List<DialogueLine> lines;
+
+  /// Resumo didático mostrado ao fim das falas.
+  final String summaryTitle;
+  final List<String> summaryBullets;
+  final String nextLabel;
+}
 
 /// Alternativa de um caso.
 class MutationChoice {
@@ -331,6 +390,7 @@ class CreditMember {
 class MutationProgress {
   const MutationProgress({
     this.version = currentVersion,
+    this.userName = '',
     this.stepIndex = 0,
     this.startedAt,
     this.finishedAt,
@@ -339,9 +399,12 @@ class MutationProgress {
     this.quizAnswers = const {},
   });
 
-  static const int currentVersion = 1;
+  static const int currentVersion = 2;
 
   final int version;
+
+  /// Nome informado no onboarding; usado nos diálogos e no diagnóstico.
+  final String userName;
   final int stepIndex;
   final DateTime? startedAt;
   final DateTime? finishedAt;
@@ -362,6 +425,7 @@ class MutationProgress {
 
   MutationProgress copyWith({
     int? version,
+    String? userName,
     int? stepIndex,
     DateTime? startedAt,
     DateTime? finishedAt,
@@ -371,6 +435,7 @@ class MutationProgress {
   }) {
     return MutationProgress(
       version: version ?? this.version,
+      userName: userName ?? this.userName,
       stepIndex: stepIndex ?? this.stepIndex,
       startedAt: startedAt ?? this.startedAt,
       finishedAt: finishedAt ?? this.finishedAt,
@@ -382,6 +447,7 @@ class MutationProgress {
 
   Map<String, dynamic> toJson() => {
     'version': version,
+    'userName': userName,
     'stepIndex': stepIndex,
     'startedAt': startedAt?.toIso8601String(),
     'finishedAt': finishedAt?.toIso8601String(),
@@ -393,6 +459,7 @@ class MutationProgress {
   factory MutationProgress.fromJson(Map<String, dynamic> json) {
     return MutationProgress(
       version: json['version'] as int? ?? 1,
+      userName: (json['userName'] as String? ?? '').trim(),
       stepIndex: (json['stepIndex'] as int? ?? 0).clamp(
         0,
         mutationFlow.length - 1,

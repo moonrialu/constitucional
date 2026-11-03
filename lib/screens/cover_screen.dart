@@ -77,13 +77,12 @@ class CoverScreen extends StatelessWidget {
                     children: [
                       _Title(short: short),
                       const SizedBox(height: 10),
-                      if (hasJourney) ...[
-                        _JourneyLine(
-                          controller: controller,
-                          mutation: mutation,
-                        ),
-                        const SizedBox(height: 8),
-                      ],
+                      _JourneyLine(
+                        controller: controller,
+                        mutation: mutation,
+                        onEditName: () => _editName(context, mutation),
+                      ),
+                      const SizedBox(height: 8),
                       const Spacer(),
                       _Menu(
                         compact: short,
@@ -114,6 +113,44 @@ class CoverScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _editName(
+    BuildContext context,
+    MutationController mutation,
+  ) async {
+    final controller = TextEditingController(text: mutation.userName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Como devemos te chamar?'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 40,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+            labelText: 'Seu nome',
+            prefixIcon: Icon(Icons.person_outline_rounded),
+          ),
+          onSubmitted: (value) => Navigator.of(context).pop(value),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name != null && name.trim().isNotEmpty) {
+      await mutation.setUserName(name);
+    }
   }
 
   Future<void> _openMutation(
@@ -288,35 +325,66 @@ class _Title extends StatelessWidget {
 }
 
 class _JourneyLine extends StatelessWidget {
-  const _JourneyLine({required this.controller, required this.mutation});
+  const _JourneyLine({
+    required this.controller,
+    required this.mutation,
+    required this.onEditName,
+  });
 
   final GameController controller;
   final MutationController mutation;
+  final VoidCallback onEditName;
 
   @override
   Widget build(BuildContext context) {
-    final text = mutation.hasProgress
+    final stats = mutation.hasProgress
         ? 'Tela ${mutation.stepNumber}/${mutation.stepCount} · '
               '${mutation.quizCorrect}/${mutation.quizTotal} no teste final'
         : '${controller.battlesWon}/${controller.battleTotal} batalhas · '
               '${controller.unlockedCardCount} cartas · '
               '${controller.earnedBadges.length} medalhas';
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    const style = TextStyle(
+      fontSize: 10,
+      color: Colors.white,
+      fontWeight: FontWeight.w600,
+    );
+    final muted = Colors.white.withValues(alpha: 0.6);
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 14,
+      runSpacing: 4,
       children: [
-        Icon(
-          Icons.bookmark_outline,
-          size: 13,
-          color: Colors.white.withValues(alpha: 0.6),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.person_outline_rounded, size: 14, color: muted),
+            const SizedBox(width: 5),
+            Text(
+              'Olá, ${mutation.displayName}',
+              style: style.copyWith(color: muted),
+            ),
+            const SizedBox(width: 3),
+            Tooltip(
+              message: 'Editar nome',
+              child: InkWell(
+                onTap: onEditName,
+                borderRadius: BorderRadius.circular(10),
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Icon(Icons.edit_outlined, size: 12, color: muted),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.white.withValues(alpha: 0.6),
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bookmark_outline, size: 13, color: muted),
+            const SizedBox(width: 5),
+            Text(stats, style: style.copyWith(color: muted)),
+          ],
         ),
       ],
     );

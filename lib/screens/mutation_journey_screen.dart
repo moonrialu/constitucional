@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/mutation_content.dart';
+import '../data/training_dialogue.dart';
 import '../engine/mutation_controller.dart';
 import '../models/mutation.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_dialog.dart';
 import 'mutation_steps.dart';
+import 'training_step.dart';
 
 /// Casca das 16 telas: barra de progresso, navegação e transições.
 class MutationJourneyScreen extends StatefulWidget {
@@ -116,6 +118,17 @@ class _MutationJourneyScreenState extends State<MutationJourneyScreen> {
         return MutationCoverStep(onStart: controller.startJourney);
       case MutationStepKind.objectives:
         return MutationObjectivesStep(onStart: controller.next);
+      case MutationStepKind.training:
+        final act = mutationTrainingById(step.caseId ?? '');
+        if (act == null) return const _MissingStep();
+        final actIndex = mutationTraining.indexWhere((a) => a.id == act.id);
+        return TrainingStepView(
+          act: act,
+          userName: controller.displayName,
+          actNumber: actIndex + 1,
+          actTotal: mutationTraining.length,
+          onContinue: controller.next,
+        );
       case MutationStepKind.caseStudy:
         final caseStudy = mutationCaseById(step.caseId ?? '');
         if (caseStudy == null) return const _MissingStep();
@@ -281,10 +294,10 @@ class _TopBar extends StatelessWidget {
         return 'Caso 1 · entre o homem e a mulher';
       case 'case1-feedback':
         return 'Feedback do Caso 1';
-      case 'theory1':
-        return 'Teoria · texto não é norma';
-      case 'theory2':
-        return 'Teoria · mutação, reforma e interpretação';
+      case 'training1':
+        return 'Treinamento · texto não é norma';
+      case 'training2':
+        return 'Treinamento · mutação, reforma e meios';
       case 'check2':
         return 'Caso 2 · a triagem do gabinete';
       case 'check2-feedback':
@@ -293,8 +306,8 @@ class _TopBar extends StatelessWidget {
         return 'Caso 3 · o papel do Senado';
       case 'case3-feedback':
         return 'Feedback do Caso 3';
-      case 'theory3':
-        return 'Teoria · os limites da mutação';
+      case 'training3':
+        return 'Treinamento · os limites da mutação';
       case 'case4':
         return 'Caso 4 · o voto secreto reinterpretado';
       case 'case4-feedback':

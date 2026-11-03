@@ -525,7 +525,7 @@ const List<MutationQuizQuestion> mutationQuiz = [
     number: 1,
     statement: 'O que diferencia a mutação da reforma constitucional?',
     correct: 'B',
-    reviewStepId: 'theory2',
+    reviewStepId: 'training2',
     reviewLabel: 'Mutação, reforma e interpretação',
     feedback:
         'Reforma é a via formal do art. 60, que altera o texto. A mutação é '
@@ -549,7 +549,7 @@ const List<MutationQuizQuestion> mutationQuiz = [
     number: 2,
     statement: 'Por que a mutação é possível?',
     correct: 'A',
-    reviewStepId: 'theory1',
+    reviewStepId: 'training1',
     reviewLabel: 'Texto não é norma',
     feedback:
         'A norma é o sentido extraído do texto. A CF/88 é rígida, e o STF não '
@@ -576,7 +576,7 @@ const List<MutationQuizQuestion> mutationQuiz = [
     number: 3,
     statement: 'Qual destes NÃO é um meio de mutação constitucional?',
     correct: 'C',
-    reviewStepId: 'theory2',
+    reviewStepId: 'training2',
     reviewLabel: 'Os meios da mutação',
     feedback:
         'Emenda é reforma, pois altera o texto. Interpretação e costume mudam '
@@ -613,7 +613,7 @@ const List<MutationQuizQuestion> mutationQuiz = [
     number: 5,
     statement: 'Uma “mutação” que atribui ao texto um sentido oposto ao que ele diz é:',
     correct: 'B',
-    reviewStepId: 'theory3',
+    reviewStepId: 'training3',
     reviewLabel: 'Os limites da mutação',
     feedback:
         'O texto é o limite da interpretação. Ultrapassá-lo, ou atingir '
@@ -654,12 +654,12 @@ const List<DiagnosisBand> mutationDiagnosisBands = [
 
 /// Tela 16 — créditos.
 const List<CreditMember> mutationCreditsTeam = [
-  CreditMember(name: '[Integrante 1]', role: 'Pesquisa e revisão jurídica'),
-  CreditMember(name: '[Integrante 2]', role: 'Roteiro e redação'),
-  CreditMember(name: '[Integrante 3]', role: 'Design e identidade visual'),
-  CreditMember(name: '[Integrante 4]', role: 'Desenvolvimento'),
-  CreditMember(name: '[Integrante 5]', role: 'Testes e revisão'),
-  CreditMember(name: '[Integrante 6]', role: 'Coordenação'),
+  CreditMember(name: 'Amanda', role: 'Coordenação do gabinete-escola'),
+  CreditMember(name: 'Ian', role: 'Pesquisa e revisão jurídica'),
+  CreditMember(name: 'Gabriel', role: 'Pesquisa de jurisprudência'),
+  CreditMember(name: 'Luiza', role: 'Roteiro, didática e mnemônicos'),
+  CreditMember(name: 'Rafael', role: 'Análise de precedentes'),
+  CreditMember(name: 'Paola', role: 'Revisão crítica e testes'),
 ];
 
 const List<String> mutationReferences = [

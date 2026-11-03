@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/mutation_content.dart';
+import '../data/training_dialogue.dart';
 import '../engine/mutation_controller.dart';
 import '../models/content.dart';
 import '../models/mutation.dart';
@@ -413,7 +414,7 @@ class _MutationCaseStepState extends State<MutationCaseStep> {
           const SizedBox(height: 6),
           MutationInfoBox(
             box: InfoBox(
-              title: 'Pergunta do ministro',
+              title: 'Pergunta do ministro a ${controller.displayName}',
               text: widget.caseStudy.question,
             ),
             color: AppColors.teal,
@@ -566,7 +567,9 @@ class MutationCaseFeedbackStep extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         MutationKicker(
-                          isCorrect ? 'Escolha acertada' : 'Escolha comentada',
+                          isCorrect
+                              ? 'Escolha acertada · ${controller.displayName}'
+                              : 'Escolha comentada · ${controller.displayName}',
                           color: color,
                         ),
                         const SizedBox(height: 2),
@@ -1317,8 +1320,8 @@ class _MutationQuizStepViewState extends State<MutationQuizStepView> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Antes de liberar você para o plenário, o ministro quer cinco '
-                'respostas rápidas.',
+                '${controller.displayName}, antes de liberar você para o '
+                'plenário, o ministro quer cinco respostas rápidas.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: AppColors.ink.withValues(alpha: 0.6),
                 ),
@@ -1471,14 +1474,20 @@ class MutationDiagnosisStepView extends StatelessWidget {
               final copy = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const MutationKicker('Diagnóstico do gabinete'),
+                  MutationKicker(
+                    'Diagnóstico do gabinete · ${controller.displayName}',
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     band.title,
                     style: theme.textTheme.titleLarge?.copyWith(fontSize: 25),
                   ),
                   const SizedBox(height: 6),
-                  Text(band.message, style: theme.textTheme.bodyLarge),
+                  Text(
+                    '${controller.displayName}, você acertou $score de '
+                    '${controller.quizTotal}. ${band.message}',
+                    style: theme.textTheme.bodyLarge,
+                  ),
                   const SizedBox(height: 10),
                   MutationInfoBox(
                     box: InfoBox(
@@ -1587,12 +1596,22 @@ class MutationDiagnosisStepView extends StatelessWidget {
   }
 
   void _showReview(BuildContext context, MutationQuizQuestion question) {
+    final act = mutationTrainingById(question.reviewStepId);
     final theory = mutationTheoryById(question.reviewStepId);
     final caseStudy = mutationCaseById(
       question.reviewStepId.replaceAll('-feedback', ''),
     );
     final body = StringBuffer();
-    if (theory != null) {
+    if (act != null) {
+      body
+        ..writeln(act.summaryTitle)
+        ..writeln();
+      for (final bullet in act.summaryBullets) {
+        body
+          ..writeln('• $bullet')
+          ..writeln();
+      }
+    } else if (theory != null) {
       body
         ..writeln(theory.lead)
         ..writeln();
@@ -1753,7 +1772,7 @@ class MutationCreditsStepView extends StatelessWidget {
         const SizedBox(height: 18),
         MutationInfoBox(
           box: InfoBox(
-            title: 'Sua jornada',
+            title: 'Sua jornada, ${controller.displayName}',
             text:
                 'Tempo: ${_formatDuration(controller.elapsed)} · Teste final: '
                 '${controller.quizCorrect}/${controller.quizTotal}. O progresso '
