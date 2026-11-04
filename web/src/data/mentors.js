@@ -1,0 +1,73 @@
+export const MENTOR_PHOTOS = {
+  amanda: '/mentors/link_da_foto_da_amanda.jpg',
+  ian: '/mentors/link_da_foto_do_ian.jpg',
+  gabriel: '/mentors/link_da_foto_do_gabriel.jpg',
+  luiza: '/mentors/link_da_foto_da_luiza.jpg',
+  rafael: '/mentors/link_da_foto_do_rafael.jpg',
+  paola: '/mentors/link_da_foto_da_paola.jpg',
+};
+
+export const MENTORS = [
+  {
+    id: 'amanda',
+    name: 'Amanda',
+    initials: 'AM',
+    role: 'Coordenação do gabinete',
+    trait: 'organiza o raciocínio',
+    color: '#a14a6a',
+    glow: 'rgba(161, 74, 106, 0.45)',
+    photo: MENTOR_PHOTOS.amanda,
+  },
+  {
+    id: 'ian',
+    name: 'Ian',
+    initials: 'IA',
+    role: 'Constitucionalista',
+    trait: 'preciso e direto',
+    color: '#4c5fa8',
+    glow: 'rgba(76, 95, 168, 0.45)',
+    photo: MENTOR_PHOTOS.ian,
+  },
+  {
+    id: 'gabriel',
+    name: 'Gabriel',
+    initials: 'GA',
+    role: 'Jurisprudência',
+    trait: 'explica com exemplos',
+    color: '#247c74',
+    glow: 'rgba(36, 124, 116, 0.45)',
+    photo: MENTOR_PHOTOS.gabriel,
+  },
+  {
+    id: 'luiza',
+    name: 'Luiza',
+    initials: 'LU',
+    role: 'Didática e mnemônicos',
+    trait: 'transforma teoria em imagem',
+    color: '#b8862f',
+    glow: 'rgba(184, 134, 47, 0.45)',
+    photo: MENTOR_PHOTOS.luiza,
+  },
+  {
+    id: 'rafael',
+    name: 'Rafael',
+    initials: 'RA',
+    role: 'Precedentes',
+    trait: 'conecta os casos reais',
+    color: '#a53d4c',
+    glow: 'rgba(165, 61, 76, 0.45)',
+    photo: MENTOR_PHOTOS.rafael,
+  },
+  {
+    id: 'paola',
+    name: 'Paola',
+    initials: 'PA',
+    role: 'Revisão crítica',
+    trait: 'faz as perguntas difíceis',
+    color: '#2f6f8f',
+    glow: 'rgba(47, 111, 143, 0.45)',
+    photo: MENTOR_PHOTOS.paola,
+  },
+];
+
+export const mentorById = (id) => MENTORS.find((mentor) => mentor.id === id);
