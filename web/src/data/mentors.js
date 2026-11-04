@@ -1,19 +1,28 @@
-export const MENTOR_AVATARS = {
-  amanda: 'https://lh3.googleusercontent.com/d/1XgXG9XbJq1Z7-5WbJq1Z7-5WbJq1Z7-5W=s600',
-  ian: 'https://lh3.googleusercontent.com/d/1YhYH9YcKq2Z7-6WcJr2Z7-6WcJr2Z7-6W=s600',
-  gabriel: 'https://lh3.googleusercontent.com/d/1ZiZI9ZdLr3Z7-7WdJr3Z7-7WdJr3Z7-7W=s600',
-  luiza: 'https://lh3.googleusercontent.com/d/1AjAJ9AeMs4Z7-8WeJr4Z7-8WeJr4Z7-8W=s600',
-  rafael: 'https://lh3.googleusercontent.com/d/1BkBJ9BfNt5Z7-9WfJr5Z7-9WfJr5Z7-9W=s600',
-  paola: 'https://lh3.googleusercontent.com/d/1ClCK9CgOu6Z7-0WgJr6Z7-0WgJr6Z7-0W=s600',
+// Fotos dos mentores em public/fotos/[nome]pixel.jpg.
+// O recorte da cabeça é feito por CSS em MentorAvatar (object-cover +
+// object-position + transform), sem alterar os arquivos originais.
+export const MENTOR_PHOTOS = {
+  amanda: '/fotos/amandapixel.jpg',
+  ian: '/fotos/ianpixel.jpg',
+  gabriel: '/fotos/gabrielpixel.jpg',
+  luiza: '/fotos/luizapixel.jpg',
+  rafael: '/fotos/rafaelpixel.jpg',
+  paola: '/fotos/paolapixel.jpg',
 };
 
-export const MENTOR_PHOTOS = {
+export const MENTOR_PLACEHOLDERS = {
   amanda: '/mentors/link_da_foto_da_amanda.jpg',
   ian: '/mentors/link_da_foto_do_ian.jpg',
   gabriel: '/mentors/link_da_foto_do_gabriel.jpg',
   luiza: '/mentors/link_da_foto_da_luiza.jpg',
   rafael: '/mentors/link_da_foto_do_rafael.jpg',
   paola: '/mentors/link_da_foto_da_paola.jpg',
+};
+
+export const DEFAULT_CROP = {
+  x: '50%',
+  y: '8%',
+  zoom: 1,
 };
 
 export const MENTORS = [
@@ -25,9 +34,9 @@ export const MENTORS = [
     trait: 'organiza o raciocínio',
     color: '#7b5aa6',
     glow: 'rgba(123, 90, 166, 0.45)',
-    avatar: MENTOR_AVATARS.amanda,
-    photo: MENTOR_AVATARS.amanda,
-    placeholder: MENTOR_PHOTOS.amanda,
+    avatar: MENTOR_PHOTOS.amanda,
+    placeholder: MENTOR_PLACEHOLDERS.amanda,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
   {
     id: 'ian',
@@ -37,9 +46,9 @@ export const MENTORS = [
     trait: 'preciso e direto',
     color: '#b85c7a',
     glow: 'rgba(184, 92, 122, 0.45)',
-    avatar: MENTOR_AVATARS.ian,
-    photo: MENTOR_AVATARS.ian,
-    placeholder: MENTOR_PHOTOS.ian,
+    avatar: MENTOR_PHOTOS.ian,
+    placeholder: MENTOR_PLACEHOLDERS.ian,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
   {
     id: 'gabriel',
@@ -49,9 +58,9 @@ export const MENTORS = [
     trait: 'explica com exemplos',
     color: '#4c6fa8',
     glow: 'rgba(76, 111, 168, 0.45)',
-    avatar: MENTOR_AVATARS.gabriel,
-    photo: MENTOR_AVATARS.gabriel,
-    placeholder: MENTOR_PHOTOS.gabriel,
+    avatar: MENTOR_PHOTOS.gabriel,
+    placeholder: MENTOR_PLACEHOLDERS.gabriel,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
   {
     id: 'luiza',
@@ -61,9 +70,9 @@ export const MENTORS = [
     trait: 'transforma teoria em imagem',
     color: '#b8862f',
     glow: 'rgba(184, 134, 47, 0.45)',
-    avatar: MENTOR_AVATARS.luiza,
-    photo: MENTOR_AVATARS.luiza,
-    placeholder: MENTOR_PHOTOS.luiza,
+    avatar: MENTOR_PHOTOS.luiza,
+    placeholder: MENTOR_PLACEHOLDERS.luiza,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
   {
     id: 'rafael',
@@ -73,9 +82,9 @@ export const MENTORS = [
     trait: 'conecta os casos reais',
     color: '#3f8a5f',
     glow: 'rgba(63, 138, 95, 0.45)',
-    avatar: MENTOR_AVATARS.rafael,
-    photo: MENTOR_AVATARS.rafael,
-    placeholder: MENTOR_PHOTOS.rafael,
+    avatar: MENTOR_PHOTOS.rafael,
+    placeholder: MENTOR_PLACEHOLDERS.rafael,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
   {
     id: 'paola',
@@ -85,10 +94,29 @@ export const MENTORS = [
     trait: 'faz as perguntas difíceis',
     color: '#a53d4c',
     glow: 'rgba(165, 61, 76, 0.45)',
-    avatar: MENTOR_AVATARS.paola,
-    photo: MENTOR_AVATARS.paola,
-    placeholder: MENTOR_PHOTOS.paola,
+    avatar: MENTOR_PHOTOS.paola,
+    placeholder: MENTOR_PLACEHOLDERS.paola,
+    crop: { x: '50%', y: '8%', zoom: 1 },
   },
 ];
 
-export const mentorById = (id) => MENTORS.find((mentor) => mentor.id === id);
+export function normalizeMentorId(value = '') {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+export const mentorById = (id) =>
+  MENTORS.find((mentor) => mentor.id === normalizeMentorId(id));
+
+export const mentorByName = (value) => {
+  const key = normalizeMentorId(value);
+  return (
+    MENTORS.find(
+      (mentor) =>
+        mentor.id === key || normalizeMentorId(mentor.name) === key,
+    ) || null
+  );
+};

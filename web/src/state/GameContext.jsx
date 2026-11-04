@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { TRAINING_ACTS } from '../data/training';
 import { CARD_ROUNDS } from '../data/cards';
+import { mentorById, mentorByName } from '../data/mentors';
 
 const GameContext = createContext(null);
 const STORAGE_KEY = 'assessor-stf-ova:name';
@@ -17,6 +18,7 @@ const initialState = {
   score: 0,
   answers: [],
   finished: false,
+  manualDialogue: null,
 };
 
 function resetTraining(state) {
@@ -25,6 +27,7 @@ function resetTraining(state) {
     actIndex: 0,
     lineIndex: 0,
     showSummary: false,
+    manualDialogue: null,
   };
 }
 
@@ -37,6 +40,7 @@ function resetCards(state) {
     score: 0,
     answers: [],
     finished: false,
+    manualDialogue: null,
   };
 }
 
@@ -52,7 +56,30 @@ function reducer(state, action) {
         name: action.name,
       };
 
+    case 'SHOW_DIALOGUE': {
+      const mentor = action.mentor
+        ? mentorById(action.mentor)
+        : mentorByName(action.name);
+
+      return {
+        ...state,
+        screen: 'training',
+        showSummary: false,
+        manualDialogue: {
+          mentor: mentor?.id || null,
+          text: action.text || '',
+          emphasis: action.emphasis || null,
+        },
+      };
+    }
+
+    case 'CLEAR_DIALOGUE':
+      return { ...state, manualDialogue: null };
+
     case 'ADVANCE_LINE': {
+      if (state.manualDialogue) {
+        return { ...state, manualDialogue: null };
+      }
       if (state.showSummary) return state;
       const act = TRAINING_ACTS[state.actIndex];
       if (state.lineIndex < act.lines.length - 1) {
@@ -62,6 +89,9 @@ function reducer(state, action) {
     }
 
     case 'BACK_LINE': {
+      if (state.manualDialogue) {
+        return { ...state, manualDialogue: null };
+      }
       if (state.showSummary) return { ...state, showSummary: false };
       if (state.lineIndex > 0) {
         return { ...state, lineIndex: state.lineIndex - 1 };
@@ -78,6 +108,7 @@ function reducer(state, action) {
         actIndex: state.actIndex + 1,
         lineIndex: 0,
         showSummary: false,
+        manualDialogue: null,
       };
     }
 
@@ -167,17 +198,38 @@ export function GameProvider({ children }) {
     }
   }, [state.name]);
 
+  const showDialogue = useCallback((name, text, options = {}) => {
+    dispatch({ type: 'SHOW_DIALOGUE', name, text, ...options });
+  }, []);
+
+  useEffect(() => {
+    const command = (name, text, options = {}) =>
+      dispatch({ type: 'SHOW_DIALOGUE', name, text, ...options });
+    window.assessorSTF = { ...(window.assessorSTF || {}), showDialogue: command };
+    window.showDialogue = command;
+    return () => {
+      if (window.showDialogue === command) delete window.showDialogue;
+      if (window.assessorSTF?.showDialogue === command) {
+        delete window.assessorSTF.showDialogue;
+      }
+    };
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
       dispatch,
+      showDialogue,
+      isManual: Boolean(state.manualDialogue),
       currentAct: TRAINING_ACTS[state.actIndex],
-      currentLine: TRAINING_ACTS[state.actIndex].lines[state.lineIndex],
+      currentLine:
+        state.manualDialogue ||
+        TRAINING_ACTS[state.actIndex].lines[state.lineIndex],
       currentRound: CARD_ROUNDS[state.questionIndex],
       totalActs: TRAINING_ACTS.length,
       totalRounds: CARD_ROUNDS.length,
     }),
-    [state],
+    [state, showDialogue],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

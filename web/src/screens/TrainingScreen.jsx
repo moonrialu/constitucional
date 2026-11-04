@@ -6,11 +6,18 @@ import { personalize, useGame } from '../state/GameContext';
 
 function DialogueTail({ color }) {
   return (
-    <span
-      className="absolute -left-2 top-14 hidden h-4 w-4 rotate-45 border-b border-l border-white/10 lg:block"
-      style={{ background: '#0c2634', boxShadow: `-8px 8px 24px -16px ${color}` }}
-      aria-hidden="true"
-    />
+    <>
+      <span
+        className="absolute -top-3 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l border-t border-white/10 lg:hidden"
+        style={{ background: '#0c2634' }}
+        aria-hidden="true"
+      />
+      <span
+        className="absolute -left-2 top-[30%] hidden h-4 w-4 rotate-45 border-b border-l border-white/10 lg:block"
+        style={{ background: '#0c2634', boxShadow: `-8px 8px 24px -16px ${color}` }}
+        aria-hidden="true"
+      />
+    </>
   );
 }
 
@@ -21,6 +28,7 @@ export default function TrainingScreen() {
     currentAct,
     currentLine,
     totalActs,
+    isManual,
   } = useGame();
 
   const mentor = currentLine?.mentor ? mentorById(currentLine.mentor) : null;
@@ -118,13 +126,13 @@ export default function TrainingScreen() {
       </header>
 
       <main
-        className="relative z-10 mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-5 px-4 py-5 sm:px-7 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.28fr)] lg:gap-8 lg:px-10 lg:py-7"
+        className="relative z-10 mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-1 content-start items-start gap-3 px-4 py-5 sm:px-7 lg:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.28fr)] lg:content-center lg:items-center lg:gap-8 lg:px-10 lg:py-7"
         onClick={state.showSummary ? undefined : advance}
         role={state.showSummary ? undefined : 'button'}
         tabIndex={state.showSummary ? -1 : 0}
         aria-label={state.showSummary ? undefined : 'Avançar o diálogo'}
       >
-        <section className="relative hidden min-h-[430px] items-end justify-center self-stretch overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-white/[0.055] to-white/[0.015] shadow-stage lg:flex">
+        <section className="relative flex min-h-[150px] self-start items-end justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-white/[0.055] to-white/[0.015] px-4 pb-0 pt-4 shadow-stage lg:min-h-[430px] lg:items-center lg:self-stretch lg:py-0">
           <div className="absolute inset-0 opacity-60">
             <div className="absolute left-1/2 top-[14%] h-56 w-56 -translate-x-1/2 rounded-full bg-gold/10 blur-3xl" />
             <div className="absolute bottom-0 left-1/2 h-36 w-[75%] -translate-x-1/2 rounded-t-[50%] border-t border-gold/15 bg-gradient-to-t from-black/40 to-transparent" />
@@ -138,25 +146,45 @@ export default function TrainingScreen() {
             </span>
           </div>
 
-          <div className="relative z-10 flex flex-col items-center pb-10">
+          <div className="relative z-10 flex flex-col items-center pb-1 lg:pb-0">
             {state.showSummary ? (
               <>
-                <MentorAvatar id="amanda" size="xl" speaking showName />
-                <p className="mt-1 max-w-[13rem] text-center text-[10px] uppercase leading-relaxed tracking-[0.16em] text-parchment/35">
+                <div className="lg:hidden">
+                  <MentorAvatar
+                    id="amanda"
+                    size="lg"
+                    speaking
+                    headOnly
+                  />
+                </div>
+                <div className="hidden lg:block">
+                  <MentorAvatar id="amanda" size="xl" speaking showName />
+                </div>
+                <p className="mt-1 hidden max-w-[13rem] text-center text-[10px] uppercase leading-relaxed tracking-[0.16em] text-parchment/35 sm:block">
                   A coordenação fecha o ato com os pontos essenciais.
                 </p>
               </>
             ) : mentor ? (
               <>
-                <MentorAvatar
-                  id={mentor.id}
-                  size="xl"
-                  speaking
-                  showName
-                  showRole
-                />
+                <div className="lg:hidden">
+                  <MentorAvatar
+                    id={mentor.id}
+                    size="lg"
+                    speaking
+                    headOnly
+                  />
+                </div>
+                <div className="hidden lg:block">
+                  <MentorAvatar
+                    id={mentor.id}
+                    size="xl"
+                    speaking
+                    showName
+                    showRole
+                  />
+                </div>
                 <div
-                  className="mt-3 rounded-full border px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em]"
+                  className="mt-2 hidden rounded-full border px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] lg:mt-3 lg:inline-flex"
                   style={{
                     borderColor: `${mentor.color}66`,
                     color: mentor.color,
@@ -168,8 +196,8 @@ export default function TrainingScreen() {
               </>
             ) : (
               <>
-                <div className="relative grid h-40 w-40 place-items-center rounded-full border border-gold/30 bg-gold/5 text-gold shadow-glow">
-                  <Scales className="h-28 w-28" />
+                <div className="relative grid h-28 w-28 place-items-center rounded-full border border-gold/30 bg-gold/5 text-gold shadow-glow lg:h-40 lg:w-40">
+                  <Scales className="h-20 w-20 lg:h-28 lg:w-28" />
                   <span className="absolute inset-3 rounded-full border border-gold/10" />
                 </div>
                 <p className="mt-5 font-serif text-2xl italic text-gold/90">
@@ -184,11 +212,11 @@ export default function TrainingScreen() {
         </section>
 
         <section
-          className="relative flex min-h-[430px] min-w-0 flex-col justify-center"
+          className="relative flex min-w-0 flex-col justify-center lg:min-h-[430px]"
           aria-live="polite"
         >
           {state.showSummary ? (
-            <div className="paper-card noise feedback-enter p-6 sm:p-8">
+            <div className="paper-card noise feedback-enter relative p-6 sm:p-8">
               <CornerMarks className="m-3 opacity-60" />
               <div className="relative z-10">
                 <div className="flex items-start justify-between gap-4">
@@ -274,7 +302,9 @@ export default function TrainingScreen() {
                   </p>
                 </div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-parchment/30">
-                  {state.lineIndex + 1} / {currentAct.lines.length}
+                  {isManual
+                    ? 'Cena avulsa'
+                    : `${state.lineIndex + 1} / ${currentAct.lines.length}`}
                 </p>
               </div>
 
@@ -282,9 +312,14 @@ export default function TrainingScreen() {
                 <DialogueTail color={mentor?.glow || '#d8b56a'} />
                 <div className="flex items-center gap-3 border-b border-white/[0.07] pb-4">
                   {mentor ? (
-                    <div className="lg:hidden">
-                      <MentorAvatar id={mentor.id} size="sm" speaking />
-                    </div>
+                    <span
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 font-display text-[9px] font-extrabold text-white lg:hidden"
+                      style={{
+                        background: `linear-gradient(145deg, ${mentor.color}, #0a2637)`,
+                      }}
+                    >
+                      {mentor.initials}
+                    </span>
                   ) : (
                     <span className="grid h-9 w-9 place-items-center rounded-full border border-gold/30 bg-gold/10 text-gold">
                       <Scales className="h-6 w-6" />
@@ -334,7 +369,7 @@ export default function TrainingScreen() {
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.7">
                       <path d="M8 13V6.5a1.5 1.5 0 013 0V12M11 12V4.5a1.5 1.5 0 013 0V12M14 12V5.5a1.5 1.5 0 013 0V13M8 10.5l-1.6-.8A1.6 1.6 0 004 11.2V14c0 4 2.7 6 6 6h2c3.3 0 5-2 5-5v-2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Toque na cena para avançar
+                    {isManual ? 'Cena avulsa do gabinete' : 'Toque na cena para avançar'}
                   </span>
                   <span className="ml-auto hidden text-[9px] uppercase tracking-[0.14em] text-parchment/20 sm:block">
                     ESPAÇO · →
@@ -349,7 +384,7 @@ export default function TrainingScreen() {
                     event.stopPropagation();
                     back();
                   }}
-                  disabled={state.lineIndex === 0}
+                  disabled={!isManual && state.lineIndex === 0}
                   className="flex h-11 items-center gap-2 rounded-xl border border-white/10 px-4 text-[10px] font-bold uppercase tracking-[0.14em] text-parchment/60 transition-colors hover:border-white/25 hover:text-parchment disabled:cursor-not-allowed disabled:opacity-25"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
@@ -362,7 +397,9 @@ export default function TrainingScreen() {
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
-                      width: `${((state.lineIndex + 1) / currentAct.lines.length) * 100}%`,
+                      width: isManual
+                        ? '100%'
+                        : `${((state.lineIndex + 1) / currentAct.lines.length) * 100}%`,
                       background: `linear-gradient(90deg, ${mentor?.color || '#63c7b8'}, #d8b56a)`,
                     }}
                   />
@@ -377,7 +414,11 @@ export default function TrainingScreen() {
                   className="flex h-11 items-center gap-2 rounded-xl px-5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-ink transition-transform hover:-translate-y-0.5"
                   style={{ backgroundColor: mentor?.color || '#d8b56a', color: '#fff' }}
                 >
-                  {state.lineIndex === currentAct.lines.length - 1 ? 'Ver resumo' : 'Avançar'}
+                  {isManual
+                    ? 'Encerrar cena'
+                    : state.lineIndex === currentAct.lines.length - 1
+                      ? 'Ver resumo'
+                      : 'Avançar'}
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
