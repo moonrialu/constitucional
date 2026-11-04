@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { mentorById } from '../data/mentors';
 
 const SIZES = {
@@ -54,11 +54,27 @@ export default function MentorAvatar({
   className = '',
 }) {
   const mentor = useMemo(() => mentorById(id), [id]);
+  const [source, setSource] = useState(mentor?.avatar || mentor?.photo || '');
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const s = SIZES[size] || SIZES.md;
 
+  useEffect(() => {
+    setSource(mentor?.avatar || mentor?.photo || '');
+    setLoaded(false);
+    setFailed(false);
+  }, [mentor?.id, mentor?.avatar, mentor?.photo]);
+
   if (!mentor) return null;
+
+  function handleError() {
+    if (mentor.placeholder && source !== mentor.placeholder) {
+      setSource(mentor.placeholder);
+      setLoaded(false);
+      return;
+    }
+    setFailed(true);
+  }
 
   return (
     <div
@@ -83,13 +99,14 @@ export default function MentorAvatar({
             </span>
           </div>
 
-          {!failed && (
+          {!failed && source && (
             <img
-              src={mentor.photo}
+              src={source}
               alt={mentor.name}
+              referrerPolicy="no-referrer"
               className={`relative h-full w-full scale-105 object-cover object-[50%_22%] transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
               onLoad={() => setLoaded(true)}
-              onError={() => setFailed(true)}
+              onError={handleError}
               draggable="false"
             />
           )}
