@@ -15,6 +15,19 @@ Color mentorColor(String id) {
   };
 }
 
+/// Foto pixel art de cada mentor (recorte circular focado no rosto).
+String? mentorPhotoAsset(String id) {
+  return switch (id) {
+    'amanda' => 'assets/mentors/amandapixel.jpeg',
+    'ian' => 'assets/mentors/ianpixel.jpeg',
+    'gabriel' => 'assets/mentors/gabrielpixel.jpg',
+    'luiza' => 'assets/mentors/luizapixel.jpg',
+    'rafael' => 'assets/mentors/rafaelpixel.jpeg',
+    'paola' => 'assets/mentors/paolapixel.jpg',
+    _ => null,
+  };
+}
+
 /// Avatar circular com as iniciais do mentor. Sem imagens externas.
 class MentorAvatar extends StatelessWidget {
   const MentorAvatar({
@@ -31,6 +44,7 @@ class MentorAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = mentorColor(mentor.id);
+    final photo = mentorPhotoAsset(mentor.id);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       width: radius * 2,
@@ -62,13 +76,35 @@ class MentorAvatar extends StatelessWidget {
               ]
             : null,
       ),
-      child: Text(
-        mentor.initials,
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: radius * 0.62,
-          letterSpacing: 0.4,
+      child: Padding(
+        padding: EdgeInsets.all(active ? 2.4 : 1.2),
+        child: ClipOval(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ColoredBox(color: color.withValues(alpha: 0.9)),
+              Center(
+                child: Text(
+                  mentor.initials,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: radius * 0.62,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+              if (photo != null)
+                Image.asset(
+                  photo,
+                  fit: BoxFit.cover,
+                  // As artes são retratos: sobe o recorte para valorizar o rosto.
+                  alignment: const Alignment(0, -0.72),
+                  filterQuality: FilterQuality.none,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+            ],
+          ),
         ),
       ),
     );

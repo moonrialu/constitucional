@@ -11,6 +11,7 @@ const List<BattleConfig> battleConfigs = [
     subtitle: 'Caso 1 · Regra × princípio',
     opponentName: 'Defesa de João',
     opponentTitle: 'Argumenta que a idade mínima pode ser ponderada',
+    opponentMentorId: 'ian',
     intro:
         'João tem 34 anos e quer se candidatar a Presidente. A defesa sustenta '
         'que a soberania popular deve ser ponderada com a exigência de 35 anos. '
@@ -33,7 +34,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Soberania popular é princípio e, ponderada com a idade mínima, '
             'deveria permitir a candidatura.',
-        damage: 4,
+        damage: 2,
         counterTags: {CardTag.regra},
         counterHint: 'Regra',
         sourceChoiceId: 'A',
@@ -43,7 +44,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Qualquer princípio fundamental prevalece sobre a regra da idade '
             'mínima.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.regra},
         counterHint: 'Regra',
         sourceChoiceId: 'C',
@@ -53,12 +54,15 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Regras e princípios têm hierarquia: o princípio sempre vence a '
             'regra.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.regra},
         counterHint: 'Regra',
       ),
     ],
     rewardLabel: 'Ponderação, Alexy e Hierarquia das normas',
+    playerConviction: 30,
+    machineConviction: 10,
+    energyPerTurn: 4,
     theoryId: 'theory1',
   ),
   BattleConfig(
@@ -68,6 +72,7 @@ const List<BattleConfig> battleConfigs = [
     subtitle: 'Caso 2 · Colisão de princípios',
     opponentName: 'Advogado do cantor',
     opponentTitle: 'Pede a proibição da biografia antes do lançamento',
+    opponentMentorId: 'gabriel',
     intro:
         'A biografia foi escrita com entrevistas e documentos públicos. O '
         'cantor invoca intimidade e vida privada; a editora invoca liberdade de '
@@ -90,7 +95,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'A intimidade está antes no texto, então prevalece pelo critério '
             'hierárquico.',
-        damage: 4,
+        damage: 2,
         counterTags: {CardTag.principio},
         counterHint: 'Princípio',
         sourceChoiceId: 'A',
@@ -100,7 +105,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Um dos dois direitos deve ser declarado inválido e retirado do '
             'sistema.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.principio},
         counterHint: 'Princípio',
         sourceChoiceId: 'B',
@@ -110,13 +115,15 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Sem autorização prévia do biografado, a obra deve ser proibida '
             'antes do lançamento.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.precedente},
         counterHint: 'Precedente',
       ),
     ],
     rewardLabel: 'Honra e imagem',
-    machineConviction: 18,
+    playerConviction: 30,
+    machineConviction: 10,
+    energyPerTurn: 4,
   ),
   BattleConfig(
     id: 'battle3',
@@ -125,6 +132,7 @@ const List<BattleConfig> battleConfigs = [
     subtitle: 'Caso 3 · Mutação constitucional',
     opponentName: 'Ministério Público',
     opponentTitle: 'Exige emenda para reconhecer a união',
+    opponentMentorId: 'amanda',
     intro:
         'Um casal de duas mulheres, junto há 12 anos, pede o reconhecimento da '
         'união estável. O texto do art. 226, § 3º, não foi alterado. Mostre '
@@ -145,7 +153,7 @@ const List<BattleConfig> battleConfigs = [
       Objection(
         id: 'b3-o1',
         text: 'Só uma emenda constitucional pode mudar o sentido do texto.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.mutacao},
         counterHint: 'Mutação',
         sourceChoiceId: 'A',
@@ -155,7 +163,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'O STF pode reescrever qualquer dispositivo quando a sociedade '
             'muda.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.competencia},
         counterHint: 'Limite',
         sourceChoiceId: 'C',
@@ -164,13 +172,15 @@ const List<BattleConfig> battleConfigs = [
         id: 'b3-o3',
         text:
             'A expressão "homem e mulher" é um limite textual intransponível.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.mutacao},
         counterHint: 'Mutação',
       ),
     ],
     rewardLabel: 'Entidade familiar, Voto secreto, Cláusula pétrea e Controle preventivo',
-    machineConviction: 20,
+    playerConviction: 30,
+    machineConviction: 12,
+    energyPerTurn: 4,
     theoryId: 'theory2',
   ),
   BattleConfig(
@@ -180,6 +190,7 @@ const List<BattleConfig> battleConfigs = [
     subtitle: 'Caso 4 · Mutação inconstitucional',
     opponentName: 'Tribunal fictício',
     opponentTitle: 'Diz que "voto secreto" virou voto identificado',
+    opponentMentorId: 'rafael',
     intro:
         'Um tribunal decide que "voto secreto" passou a significar voto '
         'registrado com o nome do eleitor. O texto continua igual. Classifique '
@@ -200,7 +211,7 @@ const List<BattleConfig> battleConfigs = [
       Objection(
         id: 'b4-o1',
         text: 'Texto igual basta: o sentido mudou com a sociedade.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.mutacao},
         counterHint: 'Mutação',
         sourceChoiceId: 'A',
@@ -208,7 +219,7 @@ const List<BattleConfig> battleConfigs = [
       Objection(
         id: 'b4-o2',
         text: 'Seria válida se fosse feita por emenda constitucional.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.competencia},
         counterHint: 'Cláusula pétrea',
         sourceChoiceId: 'B',
@@ -218,14 +229,16 @@ const List<BattleConfig> battleConfigs = [
         text:
             'A mutação pode contrariar o texto, desde que acompanhe a evolução '
             'da sociedade.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.mutacao},
         counterHint: 'Mutação',
       ),
     ],
     rewardLabel:
         'Rcl 4335, Mutação inconstitucional, Separação dos Poderes e mais',
-    machineConviction: 20,
+    playerConviction: 30,
+    machineConviction: 12,
+    energyPerTurn: 4,
     theoryId: 'theory2',
   ),
   BattleConfig(
@@ -235,6 +248,7 @@ const List<BattleConfig> battleConfigs = [
     subtitle: 'Caso 5 · Cláusula pétrea',
     opponentName: 'Autores da PEC',
     opponentTitle: 'Alegam quórum e soberania popular',
+    opponentMentorId: 'paola',
     intro:
         'Uma PEC aprovada em dois turnos, por 3/5, quer extinguir o STF e '
         'transferir suas funções a um conselho indicado pelo Executivo. '
@@ -257,7 +271,7 @@ const List<BattleConfig> battleConfigs = [
         text:
             'O quórum de 3/5 foi cumprido; a vontade popular legitima a '
             'mudança.',
-        damage: 5,
+        damage: 3,
         counterTags: {CardTag.competencia},
         counterHint: 'Cláusula pétrea',
         sourceChoiceId: 'A',
@@ -265,7 +279,7 @@ const List<BattleConfig> battleConfigs = [
       Objection(
         id: 'b5-o2',
         text: 'O referendo popular pode convalidar a supressão do STF.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.competencia},
         counterHint: 'Cláusula pétrea',
         sourceChoiceId: 'C',
@@ -275,13 +289,15 @@ const List<BattleConfig> battleConfigs = [
         text:
             'Cláusulas pétreas limitam a interpretação, não a reforma '
             'constitucional.',
-        damage: 6,
+        damage: 3,
         counterTags: {CardTag.competencia},
         counterHint: 'Cláusula pétrea',
       ),
     ],
     rewardLabel: 'Parecer do ministro',
-    machineConviction: 22,
+    playerConviction: 30,
+    machineConviction: 14,
+    energyPerTurn: 4,
     theoryId: 'theory2',
   ),
 ];

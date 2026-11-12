@@ -3,9 +3,9 @@
 OVA de Direito Constitucional I (Faculdade Baiana de Direito, 2026.2) em
 **paisagem**, com dois modos:
 
-1. **Jornada de mutação constitucional** (principal): onboarding com o nome do
-   estudante, treinamento em estilo *visual novel* com seis mentores e, depois,
-   quatro processos com dinâmica de fixação e teste final, em 16 telas.
+1. **Jornada de mutação constitucional** (principal): onboarding com o nome e
+   o avatar do estudante, treinamento em estilo *visual novel* com seis mentores
+   e, em seguida, cinco batalhas de cartas, diagnóstico e créditos, em 12 telas.
 2. **Baralho de argumentos** (extra): o jogo de cartas original, com cinco
    batalhas sobre regras, princípios e mutação.
 
@@ -26,24 +26,27 @@ mesmo aparelho:
 O roteiro segue a lógica **onboarding → treinamento → prática**:
 
 ```
-onboarding (nome) → capa → objetivos
+onboarding (nome + avatar) → capa → objetivos
   → treinamento 1 (texto × norma)
   → treinamento 2 (mutação × reforma × meios)
-  → treinamento 3 (limites da mutação)
-  → caso 1 → feedback
-  → classificação (3 itens) → feedback
-  → caso 3 (Senado) → feedback + linha do tempo
-  → caso 4 (voto secreto) → feedback + linha do tempo
-  → teste final (5 questões, feedback imediato) → diagnóstico → créditos
+  → treinamento 3 (limites da mutação) → “Jogar agora”
+  → batalha 1 → batalha 2 → batalha 3 → batalha 4 → batalha 5
+  → diagnóstico → créditos
 ```
+
+O botão final do treinamento já entra direto na primeira batalha, sem etapa
+intermediária. As cinco batalhas usam as objeções e os casos do roteiro, e o
+diagnóstico final considera o desempenho nos duelos.
 
 ### Onboarding
 
-Na primeira abertura, o app pede o nome antes de liberar a jornada. O nome é
-salvo no aparelho, normalizado (espaços extras removidos) e passa a aparecer
-nos balões dos mentores, no título das perguntas, no diagnóstico e nos
-créditos. Na capa, a saudação “Olá, {nome}” tem um lápis para editar o nome a
-qualquer momento. Sem nome salvo, o onboarding volta a ser exibido.
+Na primeira abertura, o app pede o nome e o avatar antes de liberar a jornada.
+O nome é salvo no aparelho, normalizado (espaços extras removidos) e passa a
+aparecer nos balões dos mentores, no título das perguntas, no diagnóstico e nos
+créditos. O avatar usa os retratos do grupo em `assets/mentors/`: a escolha é
+persistida e aparece na capa, na mesa de batalha e no perfil. Na capa, a saudação
+“Olá, {nome}” tem um lápis para editar o nome e trocar o avatar a qualquer
+momento. Sem nome salvo, o onboarding volta a ser exibido.
 
 ### Fase de treinamento (visual novel)
 
@@ -84,26 +87,27 @@ a partir de `mutationFlow`, sem conteúdo preso às telas.
 
 ## A batalha de cartas
 
-O modo extra transforma cada caso em um duelo contra uma tese adversa:
+O modo extra transforma cada caso em um duelo contra uma tese adversa, com
+dificuldade fácil e possibilidade de refazer a partida:
 
-- **Convicção**: jogador e máquina começam com 18–22 pontos. Zerar a da tese
-  vence; zerar a sua permite **retomar a batalha** (não há game over).
-- **Energia**: 3 por turno; mão de 5 cartas; baralho de 10; descarte
+- **Convicção**: a assessora começa com 30 pontos e a tese adversa com 10–14.
+  Zerar a da tese vence; zerar a sua permite **refazer a batalha** (não há game
+  over).
+- **Energia**: 4 por turno; mão de 5 cartas; baralho de 10; descarte
   reembaralhado quando o monte acaba.
 - **Tipos de carta**: ataque (dano), defesa (bloqueio) e apoio (compra carta,
   devolve energia).
-- **Objeções**: cada turno a máquina ataca com o texto de uma alternativa
-  incorreta do caso. A objeção indica o fundamento que a refuta (`Regra`,
-  `Princípio`, `Mutação`, `Precedente`, `Competência`...). Jogar uma carta com a
-  tag certa **refuta** o ataque (dano zero no turno) e dá **+3** de bônus.
-- **Mão e leitura**: as cartas ficam com apenas 40% visíveis na base. Um toque
-  levanta a carta para leitura e outro toque a abaixa; várias cartas podem
-  ficar levantadas ao mesmo tempo. **Só o duplo toque joga** a carta — e a
-  carta voa da mão até o campo de batalha antes de o efeito ser aplicado.
-- **Conjunto de resposta**: com duas ou mais cartas levantadas, o duplo toque
-  em qualquer uma delas joga o **conjunto**. Custo e efeitos somam numa única
-  jogada (ex.: no caso do candidato de 34 anos, *Idade mínima* + *Subsunção*
-  combatem a mesma objeção), e a refutação concede os +3 uma única vez.
+- **Objeções**: cada turno a máquina ataca com uma objeção de 2–3 pontos de
+  dano, tirada das alternativas incorretas do caso. A objeção indica o
+  fundamento que a refuta (`Regra`, `Princípio`, `Mutação`, `Precedente`,
+  `Competência`...). Jogar uma carta com a tag certa **refuta** o ataque (dano
+  zero no turno) e dá **+3** de bônus.
+- **Mão e leitura**: as cartas aparecem inteiras na mão. Um único toque já joga
+  a carta; as que refutam a objeção atual ficam destacadas em dourado com a
+  etiqueta **REFUTA**. A carta voa da mão até o campo de batalha antes de o
+  efeito ser aplicado.
+- **Oponente do grupo**: cada batalha tem um mentor do grupo interpretando a
+  tese adversa (`opponentMentorId`), com retrato e nome no painel lateral.
 - **Relatório pós-batalha**: ao vencer, o app mostra o feedback jurídico
   completo da alternativa correta, o precedente e as cartas recém-liberadas.
 
@@ -113,6 +117,15 @@ Distribuição da mão em cascata, flip da objeção a cada turno, elevação da
 cartas selecionadas, voo da carta (ou do conjunto, em cascata) até a objeção,
 banner da jogada, número de dano flutuante e transições de baralho/mão. Tudo respeita `MediaQuery.disableAnimations`? As durações são
 curtas (120–650 ms) e não bloqueiam a jogada.
+
+### Mapa mental interativo
+
+Uma tela separada da jornada resume a **mutação constitucional** em um mapa
+mental navegável: nós tocáveis (texto × norma, mutação × reforma, meios,
+limites e cláusulas pétreas, casos práticos), linhas animadas entre os ramos e
+uma pergunta de fixação com resposta comentada. O mapa é aberto pela capa, pelo
+menu do gabinete (item **Mapa mental interativo**) e pela barra superior da
+jornada, sem interromper o progresso salvo.
 
 ## Fluxo do modo cartas
 
@@ -168,7 +181,7 @@ lib/
     battle.dart                 # BattleConfig, Objection, BattleRecord, log
     content.dart                # casos, teoria, checks, quiz (modo cartas)
     mutation.dart               # tipos e progresso da jornada de mutação
-    progress.dart               # save v2 (batalhas, cartas, visited, quiz)
+    progress.dart               # save v3 (batalhas, cartas, visited, quiz)
   data/
     mutation_content.dart       # casos, check, quiz, diagnóstico e créditos
     training_dialogue.dart      # seis mentores e os três atos do treinamento
@@ -182,15 +195,17 @@ lib/
     battle_engine.dart          # motor puro: turnos, energia, refutação
     game_controller.dart        # fluxo do baralho, desbloqueios, badges
   screens/
-    mutation_journey_screen.dart # casca das 16 telas + top bar
+    mutation_journey_screen.dart # casca das 12 telas + top bar
     mutation_steps.dart          # capa, casos, check, quiz, diagnóstico
     training_step.dart           # treinamento em visual novel (balões)
-    onboarding_screen.dart       # entrada do nome + apresentação dos mentores
+    onboarding_screen.dart       # entrada do nome + escolha de avatar
     battle_screen.dart           # mesa em paisagem + relatório
+    mind_map_screen.dart         # mapa mental interativo da mutação
     collection_screen.dart       # coleção de cartas
     cover_screen.dart, glossary_screen.dart, root_router.dart
   widgets/
-    mentor_avatar.dart           # avatar circular com iniciais dos mentores
+    mentor_avatar.dart           # retrato circular dos mentores do grupo
+    avatar_picker.dart           # seletor de avatar reutilizável
     mutation_widgets.dart        # cartões, tabela, linha do tempo, botões
     card_view.dart               # face/verso da carta
     theory_sheet.dart            # teoria em diálogo durante a batalha
@@ -209,8 +224,9 @@ A jornada de mutação usa a chave **`ova_mutacao_progress_v1`**:
 
 ```json
 {
-  "version": 2,
+  "version": 3,
   "userName": "Ana",
+  "avatarId": "amanda",
   "stepIndex": 4,
   "startedAt": "2026-10-24T12:52:42",
   "finishedAt": null,
@@ -220,8 +236,9 @@ A jornada de mutação usa a chave **`ova_mutacao_progress_v1`**:
 }
 ```
 
-Saves da versão 1 (sem `userName`) são lidos e migrados automaticamente para a
-versão 2; o nome volta a ser pedido no onboarding quando estiver vazio.
+Saves da versão 1 (sem `userName`) e da versão 2 (sem `avatarId`) são lidos e
+migrados automaticamente para a versão 3; o avatar volta a ser pedido no
+onboarding quando estiver vazio.
 
 O modo cartas usa a chave **`ova_stf_cards_progress_v1`**, em JSON versionado:
 

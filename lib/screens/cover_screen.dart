@@ -6,8 +6,11 @@ import '../data/battles.dart';
 import '../engine/game_controller.dart';
 import '../engine/mutation_controller.dart';
 import '../theme/app_theme.dart';
+import '../widgets/avatar_picker.dart';
 import '../widgets/game_dialog.dart';
+import '../widgets/mentor_avatar.dart';
 import 'battle_screen.dart';
+import 'mind_map_screen.dart';
 import 'mutation_journey_screen.dart';
 
 /// Tela inicial do jogo: balança da justiça ao fundo, nome do jogo no canto
@@ -70,7 +73,7 @@ class CoverScreen extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 16, 24, 12),
+                  padding: const EdgeInsets.fromLTRB(28, 16, 24, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
@@ -92,6 +95,7 @@ class CoverScreen extends StatelessWidget {
                         onContinue: () =>
                             _continue(context, controller, mutation),
                         onCards: () => _startBattles(context, controller),
+                        onMindMap: () => _openMindMap(context),
                         onExit: () => SystemNavigator.pop(),
                       ),
                       const SizedBox(height: 8),
@@ -120,37 +124,74 @@ class CoverScreen extends StatelessWidget {
     MutationController mutation,
   ) async {
     final controller = TextEditingController(text: mutation.userName);
-    final name = await showDialog<String>(
+    var avatarId = mutation.avatarId;
+    final result = await showDialog<_ProfileResult>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Como devemos te chamar?'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 40,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Seu nome',
-            prefixIcon: Icon(Icons.person_outline_rounded),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Seu perfil no gabinete'),
+          content: SizedBox(
+            width: 430,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLength: 40,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Como devemos te chamar?',
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Avatar do jogador',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      letterSpacing: 0.8,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.goldText,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  AvatarPicker(
+                    selectedId: avatarId,
+                    onSelected: (id) => setDialogState(() => avatarId = id),
+                    radius: 19,
+                  ),
+                ],
+              ),
+            ),
           ),
-          onSubmitted: (value) => Navigator.of(context).pop(value),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(
+                context,
+              ).pop(_ProfileResult(name: controller.text, avatarId: avatarId)),
+              child: const Text('Salvar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Salvar'),
-          ),
-        ],
       ),
     );
     controller.dispose();
-    if (name != null && name.trim().isNotEmpty) {
-      await mutation.setUserName(name);
+    if (result == null) return;
+    if (result.name.trim().isNotEmpty) {
+      await mutation.setUserName(result.name);
     }
+    await mutation.setAvatar(result.avatarId);
+  }
+
+  Future<void> _openMindMap(BuildContext context) {
+    return Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const MindMapScreen()));
   }
 
   Future<void> _openMutation(
@@ -339,7 +380,7 @@ class _JourneyLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = mutation.hasProgress
         ? 'Tela ${mutation.stepNumber}/${mutation.stepCount} · '
-              '${mutation.quizCorrect}/${mutation.quizTotal} no teste final'
+              '${controller.battlesWon}/${controller.battleTotal} batalhas'
         : '${controller.battlesWon}/${controller.battleTotal} batalhas · '
               '${controller.unlockedCardCount} cartas · '
               '${controller.earnedBadges.length} medalhas';
@@ -358,15 +399,22 @@ class _JourneyLine extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_outline_rounded, size: 14, color: muted),
-            const SizedBox(width: 5),
+            Tooltip(
+              message: 'Editar perfil e avatar',
+              child: InkWell(
+                onTap: onEditName,
+                customBorder: const CircleBorder(),
+                child: MentorAvatar(mentor: mutation.avatar, radius: 13),
+              ),
+            ),
+            const SizedBox(width: 6),
             Text(
               'Olá, ${mutation.displayName}',
               style: style.copyWith(color: muted),
             ),
             const SizedBox(width: 3),
             Tooltip(
-              message: 'Editar nome',
+              message: 'Editar perfil e avatar',
               child: InkWell(
                 onTap: onEditName,
                 borderRadius: BorderRadius.circular(10),
@@ -398,6 +446,7 @@ class _Menu extends StatelessWidget {
     required this.onStart,
     required this.onContinue,
     required this.onCards,
+    required this.onMindMap,
     required this.onExit,
   });
 
@@ -406,6 +455,7 @@ class _Menu extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onContinue;
   final VoidCallback onCards;
+  final VoidCallback onMindMap;
   final VoidCallback onExit;
 
   @override
@@ -438,6 +488,13 @@ class _Menu extends StatelessWidget {
             hint: 'modo cartas (extra)',
             compact: compact,
             onTap: onCards,
+          ),
+          _MenuItem(
+            icon: Icons.account_tree_outlined,
+            label: 'Mapa mental interativo',
+            hint: 'fixação · mutação constitucional',
+            compact: compact,
+            onTap: onMindMap,
           ),
           _MenuItem(
             icon: Icons.logout_rounded,
@@ -538,6 +595,13 @@ class _MenuItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProfileResult {
+  const _ProfileResult({required this.name, required this.avatarId});
+
+  final String name;
+  final String avatarId;
 }
 
 /// Balança da justiça desenhada ao fundo, em traço dourado.

@@ -5,12 +5,21 @@ import 'package:provider/provider.dart';
 import '../engine/game_controller.dart';
 import '../screens/collection_screen.dart';
 import '../screens/glossary_screen.dart';
+import '../screens/mind_map_screen.dart';
 import '../theme/app_theme.dart';
 import 'game_dialog.dart';
 
 /// Ações do menu do gabinete. As marcadas como `future` já aparecem na lista
 /// desabilitadas, para as próximas fases do projeto.
-enum AppMenuAction { howToPlay, restart, reset, glossary, collection, export }
+enum AppMenuAction {
+  howToPlay,
+  restart,
+  reset,
+  glossary,
+  collection,
+  mindMap,
+  export,
+}
 
 class AppMenuButton extends StatelessWidget {
   const AppMenuButton({super.key, this.color, this.compact = false});
@@ -58,6 +67,13 @@ class AppMenuButton extends StatelessWidget {
           child: _MenuRow(
             icon: Icons.style_outlined,
             label: 'Coleção de cartas',
+          ),
+        ),
+        PopupMenuItem(
+          value: AppMenuAction.mindMap,
+          child: _MenuRow(
+            icon: Icons.account_tree_outlined,
+            label: 'Mapa mental interativo',
           ),
         ),
         PopupMenuItem(
@@ -114,6 +130,10 @@ class AppMenuButton extends StatelessWidget {
         await Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const CollectionScreen()),
         );
+      case AppMenuAction.mindMap:
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const MindMapScreen()));
       case AppMenuAction.export:
         await Clipboard.setData(ClipboardData(text: controller.buildReport()));
         if (!context.mounted) return;

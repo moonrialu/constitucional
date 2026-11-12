@@ -14,6 +14,7 @@ class ArgumentCardView extends StatelessWidget {
     required this.card,
     required this.width,
     this.selected = false,
+    this.highlighted = false,
     this.playable = true,
     this.dimmed = false,
     this.onTap,
@@ -22,6 +23,9 @@ class ArgumentCardView extends StatelessWidget {
   final ArgumentCard card;
   final double width;
   final bool selected;
+
+  /// A carta refuta a objeção atual e ganha destaque dourado (modo fácil).
+  final bool highlighted;
   final bool playable;
   final bool dimmed;
   final VoidCallback? onTap;
@@ -37,7 +41,8 @@ class ArgumentCardView extends StatelessWidget {
       selected: selected,
       label:
           '${card.title}. ${card.kindLabel}. Custo ${card.cost}. '
-          '${card.effectLabel}. ${card.text}',
+          '${card.effectLabel}. ${highlighted ? 'Refuta a objeção atual. ' : ''}'
+          '${card.text}',
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedOpacity(
@@ -51,18 +56,18 @@ class ArgumentCardView extends StatelessWidget {
               color: card.soft,
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(
-                color: selected
+                color: selected || highlighted
                     ? AppColors.goldText
                     : card.color.withValues(alpha: playable ? 0.55 : 0.25),
-                width: selected ? 2.4 : 1.2,
+                width: selected || highlighted ? 2.4 : 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.ink.withValues(
-                    alpha: selected ? 0.28 : 0.12,
-                  ),
-                  blurRadius: selected ? 16 : 6,
-                  offset: Offset(0, selected ? 7 : 3),
+                  color: highlighted
+                      ? AppColors.gold.withValues(alpha: 0.4)
+                      : AppColors.ink.withValues(alpha: selected ? 0.28 : 0.12),
+                  blurRadius: selected || highlighted ? 16 : 6,
+                  offset: Offset(0, selected || highlighted ? 7 : 3),
                 ),
               ],
             ),
@@ -71,7 +76,7 @@ class ArgumentCardView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _Header(card: card, width: width),
+                  _Header(card: card, width: width, highlighted: highlighted),
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
@@ -85,7 +90,7 @@ class ArgumentCardView extends StatelessWidget {
                         children: [
                           Text(
                             card.title,
-                            maxLines: 2,
+                            maxLines: width < 104 ? 1 : 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleSmall?.copyWith(
                               color: AppColors.ink,
@@ -124,10 +129,15 @@ class ArgumentCardView extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.card, required this.width});
+  const _Header({
+    required this.card,
+    required this.width,
+    this.highlighted = false,
+  });
 
   final ArgumentCard card;
   final double width;
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +153,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              card.kindLabel.toUpperCase(),
+              highlighted ? '✓ REFUTA' : card.kindLabel.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -185,14 +195,17 @@ class _TagRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (card.tags.isEmpty) return const SizedBox.shrink();
+    if (card.tags.isEmpty || width < 85) return const SizedBox.shrink();
+    // Em cartas estreitas, uma etiqueta só evita quebrar a linha e estourar
+    // o rodapé da face.
+    final visibleTags = width < 110 ? card.tags.take(1) : card.tags.take(2);
     return Padding(
       padding: EdgeInsets.only(top: width * 0.03),
       child: Wrap(
         spacing: 3,
         runSpacing: 2,
         children: [
-          for (final tag in card.tags.take(2))
+          for (final tag in visibleTags)
             Container(
               padding: EdgeInsets.symmetric(
                 horizontal: width * 0.05,

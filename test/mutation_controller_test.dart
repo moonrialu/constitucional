@@ -35,8 +35,8 @@ void main() {
     }
   }
 
-  test('a jornada tem as 16 telas do roteiro, na ordem', () {
-    expect(mutationFlow, hasLength(16));
+  test('a jornada vai da explicação às cinco batalhas, na ordem', () {
+    expect(mutationFlow, hasLength(12));
     expect(mutationFlow.first.id, 'cover');
     expect(mutationFlow.last.id, 'credits');
     expect(
@@ -46,16 +46,13 @@ void main() {
         'training1',
         'training2',
         'training3',
-        'case1',
-        'case1-feedback',
-        'check2',
-        'check2-feedback',
-        'case3',
-        'case3-feedback',
-        'case4',
-        'case4-feedback',
-        'quiz',
+        'battle1',
+        'battle2',
+        'battle3',
+        'battle4',
+        'battle5',
         'diagnosis',
+        'credits',
       ]),
     );
     expect(
@@ -64,6 +61,11 @@ void main() {
           .map((step) => step.caseId),
       ['training1', 'training2', 'training3'],
     );
+    // O último ato leva direto ao jogo, sem tela intermediária.
+    final lastTraining = mutationFlow.indexWhere(
+      (step) => step.id == 'training3',
+    );
+    expect(mutationFlow[lastTraining + 1].id, 'battle1');
   });
 
   test('o treinamento apresenta os seis mentores e três atos', () {
@@ -164,12 +166,12 @@ void main() {
     await controller.previous();
     expect(controller.currentStep.id, 'training1');
 
-    await controller.goToStep('case1');
+    await controller.goToStep('battle1');
     await controller.next();
-    expect(controller.currentStep.id, 'case1-feedback');
+    expect(controller.currentStep.id, 'battle2');
 
     await controller.previous();
-    expect(controller.currentStep.id, 'case1');
+    expect(controller.currentStep.id, 'battle1');
   });
 
   test('resposta do caso fica salva e é usada no feedback', () async {
@@ -201,10 +203,9 @@ void main() {
 
   test('teste final só fecha com as cinco respostas', () async {
     await controller.startJourney();
-    await controller.goToStep('quiz');
 
     await controller.finishQuiz();
-    expect(controller.currentStep.id, 'quiz');
+    expect(controller.currentStep.id, 'objectives');
 
     await answerAllQuiz();
     await controller.finishQuiz();
@@ -231,14 +232,14 @@ void main() {
 
   test('progresso e respostas são restaurados ao reabrir o app', () async {
     await controller.startJourney();
-    await controller.goToStep('case1');
+    await controller.goToStep('training1');
     await answerCaseCorrectly('case1');
     await controller.next();
 
     final reopened = MutationController(storage);
     await reopened.load();
 
-    expect(reopened.currentStep.id, 'case1-feedback');
+    expect(reopened.currentStep.id, 'training2');
     expect(reopened.caseAnswer('case1'), 'B');
     expect(reopened.isCaseCorrect('case1'), isTrue);
   });

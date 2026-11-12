@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/battles.dart';
 import '../data/mutation_content.dart';
 import '../data/training_dialogue.dart';
 import '../engine/mutation_controller.dart';
 import '../models/mutation.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_dialog.dart';
+import 'battle_screen.dart';
+import 'mind_map_screen.dart';
 import 'mutation_steps.dart';
 import 'training_step.dart';
 
@@ -56,6 +59,22 @@ class _MutationJourneyScreenState extends State<MutationJourneyScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scroll.hasClients) _scroll.jumpTo(0);
       });
+    }
+
+    // As batalhas de cartas ocupam a tela inteira e têm navegação própria.
+    if (step.kind == MutationStepKind.battle) {
+      final battle = battleById(step.id);
+      if (battle != null) {
+        return BattleScreen(
+          key: ValueKey(step.id),
+          config: battle,
+          onBack: controller.previous,
+          onContinue: controller.next,
+          continueLabel: battle.id == 'battle5'
+              ? 'Ver diagnóstico'
+              : 'Próxima batalha',
+        );
+      }
     }
 
     return Scaffold(
@@ -157,6 +176,9 @@ class _MutationJourneyScreenState extends State<MutationJourneyScreen> {
           onRestart: () => _confirmRestart(context, controller),
           onClose: () => Navigator.of(context).maybePop(),
         );
+      case MutationStepKind.battle:
+        // Tratado antes do Scaffold, pois ocupa a tela inteira.
+        return const _MissingStep();
     }
   }
 
@@ -273,7 +295,15 @@ class _TopBar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
+          _RoundIconButton(
+            icon: Icons.account_tree_outlined,
+            tooltip: 'Abrir o mapa mental',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const MindMapScreen()),
+            ),
+          ),
+          const SizedBox(width: 6),
           _RoundIconButton(
             icon: Icons.close_rounded,
             tooltip: 'Fechar a jornada',
@@ -314,6 +344,16 @@ class _TopBar extends StatelessWidget {
         return 'Feedback do Caso 4';
       case 'quiz':
         return 'Teste final · 5 questões';
+      case 'battle1':
+        return 'Fase de cartas · regra × princípio';
+      case 'battle2':
+        return 'Fase de cartas · colisão de princípios';
+      case 'battle3':
+        return 'Fase de cartas · mutação constitucional';
+      case 'battle4':
+        return 'Fase de cartas · limites da mutação';
+      case 'battle5':
+        return 'Fase de cartas · cláusula pétrea';
       case 'diagnosis':
         return 'Diagnóstico do gabinete';
       case 'credits':

@@ -40,6 +40,7 @@ class BattleConfig {
     required this.deck,
     required this.objections,
     required this.rewardLabel,
+    this.opponentMentorId,
     this.playerConviction = 20,
     this.machineConviction = 18,
     this.energyPerTurn = 3,
@@ -54,6 +55,9 @@ class BattleConfig {
   final String opponentName;
   final String opponentTitle;
   final String intro;
+
+  /// Integrante do grupo que interpreta a tese adversa nesta batalha.
+  final String? opponentMentorId;
 
   /// Ids de cartas, na ordem em que formam o baralho inicial.
   final List<String> deck;

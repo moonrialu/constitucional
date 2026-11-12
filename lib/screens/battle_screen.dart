@@ -6,26 +6,43 @@ import 'package:provider/provider.dart';
 
 import '../data/battles.dart';
 import '../data/cases.dart';
+import '../data/training_dialogue.dart';
 import '../engine/battle_engine.dart';
 import '../engine/game_controller.dart';
+import '../engine/mutation_controller.dart';
 import '../models/battle.dart';
 import '../models/card.dart';
 import '../models/content.dart';
+import '../models/mutation.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_menu.dart';
 import '../widgets/card_view.dart';
+import '../widgets/mentor_avatar.dart';
 import '../widgets/theory_sheet.dart';
 
 /// Mesa de batalha em paisagem: tese adversa à esquerda, fundamentos no
 /// centro e a mão da assessora na base.
 class BattleScreen extends StatefulWidget {
-  const BattleScreen({super.key, required this.config, this.guide = false});
+  const BattleScreen({
+    super.key,
+    required this.config,
+    this.guide = false,
+    this.onBack,
+    this.onContinue,
+    this.continueLabel,
+  });
 
   final BattleConfig config;
 
   /// Modo tutorial: o Guia (a máquina) joga a partida de exemplo. A mão fica
   /// travada e a narração conduz o jogador passo a passo.
   final bool guide;
+
+  /// Navegação externa: usada quando a batalha faz parte da jornada. Sem
+  /// esses callbacks, a mesa usa o fluxo isolado do baralho.
+  final VoidCallback? onBack;
+  final VoidCallback? onContinue;
+  final String? continueLabel;
 
   @override
   State<BattleScreen> createState() => _BattleScreenState();
@@ -45,9 +62,6 @@ class _BattleScreenState extends State<BattleScreen> {
   final List<OverlayEntry> _insertionEntries = [];
   final List<Timer> _insertionTimers = [];
 
-  /// Janela do duplo toque (toque simples apenas revela a carta).
-  DateTime? _lastTapAt;
-  String? _lastTapId;
   bool _saved = false;
   bool _helpShown = false;
 
@@ -100,38 +114,11 @@ class _BattleScreenState extends State<BattleScreen> {
 
   // --------------------------------------------------------------- jogadas
 
-  /// A mão fica escondida na base: um toque levanta a carta para leitura e
-  /// outro toque na mesma carta devolve à posição de descanso. Só o **duplo
-  /// toque** coloca a carta no campo de batalha.
+  /// Modo fácil: um único toque já joga a carta. As cartas ficam inteiras na
+  /// mão e as que refutam a objeção atual ganham um destaque dourado.
   void _select(ArgumentCard card, Rect? rect) {
     if (_busy || _engine.isOver || widget.guide) return;
-
-    final now = DateTime.now();
-    final isDouble =
-        _lastTapId == card.id &&
-        _lastTapAt != null &&
-        now.difference(_lastTapAt!) <= const Duration(milliseconds: 400);
-
-    if (isDouble) {
-      _lastTapId = null;
-      _lastTapAt = null;
-      _play(_comboFor(card), fromRect: rect);
-      return;
-    }
-
-    _lastTapId = card.id;
-    _lastTapAt = now;
-
-    setState(() {
-      if (_lifted.remove(card.id)) {
-        if (_focusedId == card.id) {
-          _focusedId = _lifted.isEmpty ? null : _lifted.last;
-        }
-      } else {
-        _lifted.add(card.id);
-        _focusedId = card.id;
-      }
-    });
+    _play([card], fromRect: rect);
   }
 
   void _lowerAll() {
@@ -145,13 +132,6 @@ class _BattleScreenState extends State<BattleScreen> {
   List<ArgumentCard> get _comboCards => [
     for (final card in _engine.hand)
       if (_lifted.contains(card.id)) card,
-  ];
-
-  /// Conjunto a jogar: todas as elevadas mais a carta tocada, se ainda não
-  /// estiver no conjunto.
-  List<ArgumentCard> _comboFor(ArgumentCard tapped) => [
-    for (final card in _engine.hand)
-      if (_lifted.contains(card.id) || card.id == tapped.id) card,
   ];
 
   void _play(List<ArgumentCard> cards, {Rect? fromRect}) {
@@ -466,7 +446,12 @@ class _BattleScreenState extends State<BattleScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<GameController>();
+    final mutation = context.watch<MutationController>();
     final config = widget.config;
+    final hintIds = {
+      for (final card in _engine.hand)
+        if (_engine.objection?.isCounteredBy(card) ?? false) card.id,
+    };
 
     return Scaffold(
       backgroundColor: AppColors.navy,
@@ -475,11 +460,11 @@ class _BattleScreenState extends State<BattleScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final compact = constraints.maxHeight < 380;
+            final compact = constraints.maxHeight < 430;
             final sideWidth = (constraints.maxWidth * 0.19)
                 .clamp(104.0, 166.0)
                 .toDouble();
-            final handHeight = compact ? 112.0 : 132.0;
+            final handHeight = compact ? 118.0 : 148.0;
 
             return Stack(
               children: [
@@ -516,7 +501,7 @@ class _BattleScreenState extends State<BattleScreen> {
                                 turn: _engine.turn,
                                 onBack: widget.guide
                                     ? () => Navigator.of(context).maybePop()
-                                    : controller.previous,
+                                    : widget.onBack ?? controller.previous,
                                 onHelp: widget.guide ? null : _openGuideDemo,
                               ),
                             ),
@@ -535,6 +520,7 @@ class _BattleScreenState extends State<BattleScreen> {
                               engine: _engine,
                               guide: widget.guide,
                               compact: compact,
+                              avatar: mutation.avatar,
                             ),
                           ),
                           Expanded(
@@ -543,6 +529,7 @@ class _BattleScreenState extends State<BattleScreen> {
                               liftedIds: _lifted,
                               focusedId: _focusedId,
                               energy: _engine.energy,
+                              hintIds: hintIds,
                               enabled:
                                   !_busy && !_engine.isOver && !widget.guide,
                               onTap: _select,
@@ -583,7 +570,8 @@ class _BattleScreenState extends State<BattleScreen> {
                       config: config,
                       engine: _engine,
                       newCards: _newCards,
-                      onContinue: controller.next,
+                      onContinue: widget.onContinue ?? controller.next,
+                      continueLabel: widget.continueLabel,
                       onRetry: _retry,
                       onTheory: config.theoryId == null
                           ? null
@@ -631,31 +619,53 @@ class _OpponentPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ratio = engine.machineConviction / engine.machineMax;
+    final opponent = config.opponentMentorId == null
+        ? null
+        : mutationMentorById(config.opponentMentorId!);
 
     return _SidePanel(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Avatar(
-            icon: Icons.account_balance,
-            color: AppColors.crimsonText,
-            soft: AppColors.crimsonSoft,
-            size: compact ? 34 : 42,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            config.opponentName,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontSize: compact ? 11 : 12,
-              fontWeight: FontWeight.w800,
-              color: AppColors.ink,
+          if (opponent != null)
+            Center(
+              child: MentorAvatar(mentor: opponent, radius: compact ? 21 : 26),
+            )
+          else
+            _Avatar(
+              icon: Icons.account_balance,
+              color: AppColors.crimsonText,
+              soft: AppColors.crimsonSoft,
+              size: compact ? 34 : 42,
             ),
-          ),
-          const SizedBox(height: 8),
+          if (opponent != null) ...[
+            const SizedBox(height: 3),
+            Text(
+              opponent.name,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                color: AppColors.crimsonText,
+              ),
+            ),
+          ],
+          if (!compact) ...[
+            const SizedBox(height: 4),
+            Text(
+              config.opponentName,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
+            ),
+          ],
+          SizedBox(height: compact ? 4 : 8),
           _Meter(
             label: 'Convicção da tese',
             value: engine.machineConviction,
@@ -683,8 +693,10 @@ class _OpponentPanel extends StatelessWidget {
                 Expanded(
                   child: Text(
                     engine.refuted
-                        ? 'Objeção refutada neste turno'
-                        : 'Dano previsto: ${engine.incomingDamage}',
+                        ? 'Objeção refutada'
+                        : 'Dano: ${engine.incomingDamage}',
+                    maxLines: compact ? 1 : 2,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 10,
                       color: AppColors.goldText,
@@ -698,51 +710,56 @@ class _OpponentPanel extends StatelessWidget {
           const SizedBox(height: 4),
           // Controles que antes ficavam no cabeçalho: voltar, turno, ajuda
           // e menu, agora compactos no rodapé do painel do oponente.
-          Row(
-            children: [
-              IconButton(
-                tooltip: 'Voltar',
-                onPressed: onBack,
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 26,
-                  height: 26,
-                ),
-                iconSize: 16,
-                icon: const Icon(Icons.arrow_back),
-              ),
-              const Spacer(),
-              Icon(
-                Icons.autorenew,
-                size: 12,
-                color: AppColors.ink.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '$turn',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
-                ),
-              ),
-              const Spacer(),
-              if (onHelp != null)
+          // O FittedBox protege o painel estreito da paisagem compacta.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 IconButton(
-                  tooltip: 'Como jogar',
-                  onPressed: onHelp,
+                  tooltip: 'Voltar',
+                  onPressed: onBack,
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints.tightFor(
-                    width: 26,
-                    height: 26,
+                    width: 24,
+                    height: 24,
                   ),
                   iconSize: 15,
-                  icon: const Icon(Icons.help_outline),
+                  icon: const Icon(Icons.arrow_back),
                 ),
-              const AppMenuButton(compact: true),
-            ],
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.autorenew,
+                  size: 12,
+                  color: AppColors.ink.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  '$turn',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                if (onHelp != null)
+                  IconButton(
+                    tooltip: 'Como jogar',
+                    onPressed: onHelp,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 24,
+                      height: 24,
+                    ),
+                    iconSize: 14,
+                    icon: const Icon(Icons.help_outline),
+                  ),
+                const AppMenuButton(compact: true),
+              ],
+            ),
           ),
         ],
       ),
@@ -755,11 +772,13 @@ class _PlayerBand extends StatelessWidget {
     required this.engine,
     required this.guide,
     required this.compact,
+    required this.avatar,
   });
 
   final BattleEngine engine;
   final bool guide;
   final bool compact;
+  final MentorProfile avatar;
 
   @override
   Widget build(BuildContext context) {
@@ -779,15 +798,18 @@ class _PlayerBand extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                guide ? Icons.smart_toy_outlined : Icons.balance,
-                size: 14,
-                color: AppColors.tealText,
-              ),
-              const SizedBox(width: 4),
+              if (guide)
+                const Icon(
+                  Icons.smart_toy_outlined,
+                  size: 14,
+                  color: AppColors.tealText,
+                )
+              else
+                MentorAvatar(mentor: avatar, radius: compact ? 10 : 12),
+              const SizedBox(width: 5),
               Expanded(
                 child: Text(
-                  guide ? 'O Guia' : 'Sua assessoria',
+                  guide ? 'O Guia' : avatar.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -943,6 +965,8 @@ class _Meter extends StatelessWidget {
             Expanded(
               child: Text(
                 label.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 9,
                   letterSpacing: 0.7,
@@ -1076,8 +1100,8 @@ class _TableArea extends StatelessWidget {
               Expanded(
                 child: Text(
                   engine.refuted
-                      ? 'Objeção refutada: encerre o turno sem dano.'
-                      : 'A objeção causa ${engine.incomingDamage} de dano se não for refutada.',
+                      ? 'Objeção refutada! Encerre o turno sem sofrer dano.'
+                      : 'Toque na carta dourada para refutar (${engine.objection?.counterHint ?? 'fundamento'}).',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -1474,6 +1498,7 @@ class _HandFan extends StatefulWidget {
     required this.liftedIds,
     required this.focusedId,
     required this.energy,
+    required this.hintIds,
     required this.enabled,
     required this.onTap,
   });
@@ -1482,6 +1507,7 @@ class _HandFan extends StatefulWidget {
   final Set<String> liftedIds;
   final String? focusedId;
   final int energy;
+  final Set<String> hintIds;
   final bool enabled;
   final void Function(ArgumentCard card, Rect? rect) onTap;
 
@@ -1548,9 +1574,9 @@ class _HandFanState extends State<_HandFan>
         final total = width + overlapStep * (count - 1);
         final start = (constraints.maxWidth - total) / 2;
 
-        // Só 40% da carta aparece na base; ao tocar, ela sobe inteira.
-        final restTop = constraints.maxHeight - height * 0.4;
-        final liftedTop = 6.0;
+        // Modo fácil: as cartas ficam inteiras e visíveis na mão.
+        final restTop = 4.0;
+        final liftedTop = 4.0;
 
         final lifted = [
           for (final id in widget.liftedIds)
@@ -1571,23 +1597,6 @@ class _HandFanState extends State<_HandFan>
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              if (widget.liftedIds.isEmpty)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Text(
-                      'SUA MÃO · toque para revelar · duplo toque joga o conjunto',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.55),
-                        fontSize: 9,
-                        letterSpacing: 0.9,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
               for (final i in order)
                 _buildCard(
                   i,
@@ -1639,6 +1648,7 @@ class _HandFanState extends State<_HandFan>
               card: card,
               width: width,
               selected: selected,
+              highlighted: widget.hintIds.contains(card.id),
               playable: playable && widget.enabled,
               dimmed: !playable,
               onTap: widget.enabled
@@ -1881,6 +1891,7 @@ class _BattleReportOverlay extends StatelessWidget {
     required this.onContinue,
     required this.onRetry,
     required this.onTheory,
+    this.continueLabel,
   });
 
   final BattleConfig config;
@@ -1889,6 +1900,7 @@ class _BattleReportOverlay extends StatelessWidget {
   final VoidCallback onContinue;
   final VoidCallback onRetry;
   final VoidCallback? onTheory;
+  final String? continueLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -2134,9 +2146,10 @@ class _BattleReportOverlay extends StatelessWidget {
                         ),
                         icon: const Icon(Icons.arrow_forward, size: 18),
                         label: Text(
-                          config.id == 'battle5'
-                              ? 'Ir para o caso 6'
-                              : 'Continuar a jornada',
+                          continueLabel ??
+                              (config.id == 'battle5'
+                                  ? 'Ir para o caso 6'
+                                  : 'Continuar a jornada'),
                         ),
                       ),
                   ],

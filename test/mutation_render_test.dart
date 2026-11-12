@@ -1,11 +1,13 @@
 import 'package:assessora_stf_cards/data/mutation_content.dart';
 import 'package:assessora_stf_cards/data/training_dialogue.dart';
+import 'package:assessora_stf_cards/engine/game_controller.dart';
 import 'package:assessora_stf_cards/engine/mutation_controller.dart';
 import 'package:assessora_stf_cards/models/mutation.dart';
 import 'package:assessora_stf_cards/screens/mutation_journey_screen.dart';
 import 'package:assessora_stf_cards/screens/onboarding_screen.dart';
 import 'package:assessora_stf_cards/screens/training_step.dart';
 import 'package:assessora_stf_cards/services/mutation_store.dart';
+import 'package:assessora_stf_cards/services/progress_store.dart';
 import 'package:assessora_stf_cards/theme/app_theme.dart';
 import 'package:assessora_stf_cards/utils/personalize.dart';
 import 'package:flutter/material.dart';
@@ -16,10 +18,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MutationController controller;
+  late GameController game;
 
   setUp(() async {
     controller = MutationController(InMemoryMutationStorage());
+    game = GameController(InMemoryProgressStorage());
     await controller.load();
+    await game.load();
     await controller.setUserName('Ana');
     await controller.startJourney();
     await controller.answerCase(caseId: 'case1', choiceId: 'B');
@@ -43,8 +48,11 @@ void main() {
   Future<void> pumpStep(WidgetTester tester, String stepId) async {
     await controller.goToStep(stepId);
     await tester.pumpWidget(
-      ChangeNotifierProvider<MutationController>.value(
-        value: controller,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<MutationController>.value(value: controller),
+          ChangeNotifierProvider<GameController>.value(value: game),
+        ],
         child: MaterialApp(
           theme: buildAppTheme(),
           home: const MutationJourneyScreen(),
@@ -52,10 +60,10 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 400));
-    expect(tester.takeException(), isNull);
+    expect(tester.takeException(), isNull, reason: 'etapa $stepId');
   }
 
-  testWidgets('as 16 telas montam em paisagem sem estourar layout', (
+  testWidgets('as 12 telas montam em paisagem sem estourar layout', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1280, 720);

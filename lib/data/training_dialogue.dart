@@ -400,7 +400,7 @@ const List<TrainingAct> mutationTraining = [
     number: 'Ato 3',
     title: 'Os limites da mutação',
     subtitle: 'Quando interpretar vira usurpar',
-    nextLabel: 'Começar os processos',
+    nextLabel: 'Jogar agora',
     summaryTitle: 'O essencial do Ato 3',
     summaryBullets: [
       'Limites: texto, princípios/cláusulas pétreas e separação de Poderes.',

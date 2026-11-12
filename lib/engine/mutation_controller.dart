@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/mutation_content.dart';
+import '../data/training_dialogue.dart';
 import '../models/mutation.dart';
 import '../services/mutation_store.dart';
 
@@ -24,6 +25,19 @@ class MutationController extends ChangeNotifier {
 
   /// Nome usado nos diálogos; cai para uma saudação neutra quando vazio.
   String get displayName => hasName ? _data.userName : 'assessor(a)';
+
+  /// Avatar escolhido no onboarding. Sem escolha, usa o primeiro integrante
+  /// do grupo para que a mesa nunca fique sem rosto.
+  String get avatarId {
+    final saved = _data.avatarId;
+    if (saved.isNotEmpty && mutationMentorById(saved) != null) return saved;
+    return mutationMentors.first.id;
+  }
+
+  bool get hasAvatar => _data.avatarId.isNotEmpty;
+
+  MentorProfile get avatar =>
+      mutationMentorById(avatarId) ?? mutationMentors.first;
 
   MutationStep get currentStep =>
       mutationFlow[_data.stepIndex.clamp(0, mutationFlow.length - 1)];
@@ -148,11 +162,23 @@ class MutationController extends ChangeNotifier {
     );
   }
 
+  /// Guarda o avatar escolhido entre os integrantes do grupo.
+  Future<void> setAvatar(String mentorId) async {
+    if (mutationMentorById(mentorId) == null) return;
+    await _update(
+      _data.copyWith(
+        avatarId: mentorId,
+        version: MutationProgress.currentVersion,
+      ),
+    );
+  }
+
   /// Inicia do zero, na tela de objetivos (a capa fica no app).
   Future<void> startJourney() async {
     await _update(
       MutationProgress(
         userName: _data.userName,
+        avatarId: avatarId,
         stepIndex: 1,
         startedAt: _clock(),
         caseAnswers: const {},

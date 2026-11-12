@@ -18,6 +18,7 @@ enum MutationStepKind {
   check,
   checkFeedback,
   quiz,
+  battle,
   diagnosis,
   credits,
 }
@@ -33,41 +34,22 @@ class MutationStep {
   final String? caseId;
 }
 
-/// Estrutura do roteiro: explicação primeiro, dinâmica depois.
+/// Estrutura do roteiro: explicação primeiro, prática depois.
 ///
-/// A fase de treinamento (visual novel) ocupa as telas 3 a 5 e substitui as
-/// antigas telas de teoria. Os casos e o teste final vêm na sequência.
+/// A fase de treinamento (visual novel) ocupa as telas 3 a 5. Em seguida vêm
+/// as cinco batalhas de cartas, a fase de fixação em que os mentores testam o
+/// que foi aprendido. O diagnóstico fecha a jornada.
 const List<MutationStep> mutationFlow = [
   MutationStep('cover', MutationStepKind.cover),
   MutationStep('objectives', MutationStepKind.objectives),
   MutationStep('training1', MutationStepKind.training, caseId: 'training1'),
   MutationStep('training2', MutationStepKind.training, caseId: 'training2'),
   MutationStep('training3', MutationStepKind.training, caseId: 'training3'),
-  MutationStep('case1', MutationStepKind.caseStudy, caseId: 'case1'),
-  MutationStep(
-    'case1-feedback',
-    MutationStepKind.caseFeedback,
-    caseId: 'case1',
-  ),
-  MutationStep('check2', MutationStepKind.check, caseId: 'check2'),
-  MutationStep(
-    'check2-feedback',
-    MutationStepKind.checkFeedback,
-    caseId: 'check2',
-  ),
-  MutationStep('case3', MutationStepKind.caseStudy, caseId: 'case3'),
-  MutationStep(
-    'case3-feedback',
-    MutationStepKind.caseFeedback,
-    caseId: 'case3',
-  ),
-  MutationStep('case4', MutationStepKind.caseStudy, caseId: 'case4'),
-  MutationStep(
-    'case4-feedback',
-    MutationStepKind.caseFeedback,
-    caseId: 'case4',
-  ),
-  MutationStep('quiz', MutationStepKind.quiz),
+  MutationStep('battle1', MutationStepKind.battle),
+  MutationStep('battle2', MutationStepKind.battle),
+  MutationStep('battle3', MutationStepKind.battle),
+  MutationStep('battle4', MutationStepKind.battle),
+  MutationStep('battle5', MutationStepKind.battle),
   MutationStep('diagnosis', MutationStepKind.diagnosis),
   MutationStep('credits', MutationStepKind.credits),
 ];
@@ -391,6 +373,7 @@ class MutationProgress {
   const MutationProgress({
     this.version = currentVersion,
     this.userName = '',
+    this.avatarId = '',
     this.stepIndex = 0,
     this.startedAt,
     this.finishedAt,
@@ -399,12 +382,15 @@ class MutationProgress {
     this.quizAnswers = const {},
   });
 
-  static const int currentVersion = 2;
+  static const int currentVersion = 3;
 
   final int version;
 
   /// Nome informado no onboarding; usado nos diálogos e no diagnóstico.
   final String userName;
+
+  /// Integrante do grupo escolhido como avatar do jogador.
+  final String avatarId;
   final int stepIndex;
   final DateTime? startedAt;
   final DateTime? finishedAt;
@@ -426,6 +412,7 @@ class MutationProgress {
   MutationProgress copyWith({
     int? version,
     String? userName,
+    String? avatarId,
     int? stepIndex,
     DateTime? startedAt,
     DateTime? finishedAt,
@@ -436,6 +423,7 @@ class MutationProgress {
     return MutationProgress(
       version: version ?? this.version,
       userName: userName ?? this.userName,
+      avatarId: avatarId ?? this.avatarId,
       stepIndex: stepIndex ?? this.stepIndex,
       startedAt: startedAt ?? this.startedAt,
       finishedAt: finishedAt ?? this.finishedAt,
@@ -448,6 +436,7 @@ class MutationProgress {
   Map<String, dynamic> toJson() => {
     'version': version,
     'userName': userName,
+    'avatarId': avatarId,
     'stepIndex': stepIndex,
     'startedAt': startedAt?.toIso8601String(),
     'finishedAt': finishedAt?.toIso8601String(),
@@ -460,6 +449,7 @@ class MutationProgress {
     return MutationProgress(
       version: json['version'] as int? ?? 1,
       userName: (json['userName'] as String? ?? '').trim(),
+      avatarId: (json['avatarId'] as String? ?? '').trim(),
       stepIndex: (json['stepIndex'] as int? ?? 0).clamp(
         0,
         mutationFlow.length - 1,

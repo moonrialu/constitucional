@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/training_dialogue.dart';
 import '../engine/mutation_controller.dart';
 import '../theme/app_theme.dart';
+import '../widgets/avatar_picker.dart';
 import '../widgets/mentor_avatar.dart';
 
 /// Tela inicial de onboarding: guarda o nome e apresenta os mentores.
@@ -22,12 +23,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final FocusNode _focus = FocusNode();
   bool _saving = false;
   String? _error;
+  late String _avatarId;
 
   @override
   void initState() {
     super.initState();
-    final current = context.read<MutationController>().userName;
-    _name.text = current;
+    final controller = context.read<MutationController>();
+    _name.text = controller.userName;
+    _avatarId = controller.avatarId;
   }
 
   @override
@@ -53,7 +56,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _saving = true;
       _error = null;
     });
-    await context.read<MutationController>().setUserName(name);
+    final controller = context.read<MutationController>();
+    await controller.setUserName(name);
+    await controller.setAvatar(_avatarId);
     if (!mounted) return;
     widget.onComplete();
   }
@@ -86,6 +91,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       focus: _focus,
                       error: _error,
                       saving: _saving,
+                      avatarId: _avatarId,
+                      onAvatar: (id) => setState(() => _avatarId = id),
                       onStart: _start,
                     );
                     if (!wide) {
@@ -170,18 +177,7 @@ class _Intro extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      radius: 10,
-                      backgroundColor: mentorColor(mentor.id),
-                      child: Text(
-                        mentor.initials,
-                        style: const TextStyle(
-                          fontSize: 7,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
+                    MentorAvatar(mentor: mentor, radius: 10),
                     const SizedBox(width: 6),
                     Text(
                       mentor.name,
@@ -208,6 +204,8 @@ class _Form extends StatelessWidget {
     required this.focus,
     required this.error,
     required this.saving,
+    required this.avatarId,
+    required this.onAvatar,
     required this.onStart,
   });
 
@@ -216,6 +214,8 @@ class _Form extends StatelessWidget {
   final FocusNode focus;
   final String? error;
   final bool saving;
+  final String avatarId;
+  final ValueChanged<String> onAvatar;
   final VoidCallback onStart;
 
   @override
@@ -274,7 +274,30 @@ class _Form extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
+          Text(
+            'Escolha seu avatar',
+            style: theme.textTheme.labelSmall?.copyWith(
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w900,
+              color: AppColors.goldText,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Você joga com o rosto de um dos integrantes do grupo.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.ink.withValues(alpha: 0.6),
+            ),
+          ),
+          const SizedBox(height: 8),
+          AvatarPicker(
+            selectedId: avatarId,
+            onSelected: onAvatar,
+            radius: 19,
+            dark: false,
+          ),
+          const SizedBox(height: 14),
           TextField(
             controller: name,
             focusNode: focus,

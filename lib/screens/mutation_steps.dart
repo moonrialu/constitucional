@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/battles.dart';
 import '../data/mutation_content.dart';
-import '../data/training_dialogue.dart';
+import '../engine/game_controller.dart';
 import '../engine/mutation_controller.dart';
 import '../models/content.dart';
 import '../models/mutation.dart';
@@ -1419,9 +1420,18 @@ class MutationDiagnosisStepView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.watch<MutationController>();
-    final score = controller.quizCorrect;
-    final band = controller.diagnosisBand;
-    final perfect = score == controller.quizTotal;
+    final game = context.watch<GameController>();
+    final score = game.battlesWon;
+    final total = game.battleTotal;
+    final band = mutationDiagnosisBands.firstWhere(
+      (item) => item.contains(score),
+      orElse: () => mutationDiagnosisBands.last,
+    );
+    final perfect = total > 0 && score >= total;
+    final pending = [
+      for (final battle in battleConfigs)
+        if (!game.hasWonBattle(battle.id)) battle,
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1462,7 +1472,7 @@ class MutationDiagnosisStepView extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'de ${controller.quizTotal}',
+                      'de $total',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontWeight: FontWeight.w700,
@@ -1484,8 +1494,8 @@ class MutationDiagnosisStepView extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${controller.displayName}, você acertou $score de '
-                    '${controller.quizTotal}. ${band.message}',
+                    '${controller.displayName}, você venceu $score de '
+                    '$total batalhas na mesa. ${band.message}',
                     style: theme.textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 10),
@@ -1515,11 +1525,11 @@ class MutationDiagnosisStepView extends StatelessWidget {
             },
           ),
         ),
-        if (controller.wrongQuizQuestions.isNotEmpty) ...[
+        if (pending.isNotEmpty) ...[
           const SizedBox(height: 16),
-          MutationSectionTitle('Para revisar'),
+          MutationSectionTitle('Batalhas para rever'),
           const SizedBox(height: 10),
-          for (final question in controller.wrongQuizQuestions)
+          for (final battle in pending)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: MutationPanel(
@@ -1540,14 +1550,14 @@ class MutationDiagnosisStepView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Questão ${question.number} — ${question.reviewLabel}',
+                            battle.title,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            question.statement,
+                            battle.subtitle,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall?.copyWith(
@@ -1557,9 +1567,11 @@ class MutationDiagnosisStepView extends StatelessWidget {
                         ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => _showReview(context, question),
-                      child: const Text('Revisar'),
+                    Flexible(
+                      child: TextButton(
+                        onPressed: () => controller.goToStep(battle.id),
+                        child: const Text('Jogar'),
+                      ),
                     ),
                   ],
                 ),
@@ -1594,62 +1606,6 @@ class MutationDiagnosisStepView extends StatelessWidget {
       ],
     );
   }
-
-  void _showReview(BuildContext context, MutationQuizQuestion question) {
-    final act = mutationTrainingById(question.reviewStepId);
-    final theory = mutationTheoryById(question.reviewStepId);
-    final caseStudy = mutationCaseById(
-      question.reviewStepId.replaceAll('-feedback', ''),
-    );
-    final body = StringBuffer();
-    if (act != null) {
-      body
-        ..writeln(act.summaryTitle)
-        ..writeln();
-      for (final bullet in act.summaryBullets) {
-        body
-          ..writeln('• $bullet')
-          ..writeln();
-      }
-    } else if (theory != null) {
-      body
-        ..writeln(theory.lead)
-        ..writeln();
-      for (final paragraph in theory.paragraphs) {
-        body
-          ..writeln(paragraph)
-          ..writeln();
-      }
-      if (theory.concept != null) {
-        body
-          ..writeln(theory.concept!.title ?? '')
-          ..writeln(theory.concept!.text ?? '');
-      }
-    } else if (caseStudy != null) {
-      body.writeln(caseStudy.body);
-      body.writeln();
-      body.writeln(caseStudy.correctChoice.feedback.join('\n\n'));
-    } else {
-      body.writeln(question.feedback);
-    }
-
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(question.reviewLabel),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: SingleChildScrollView(child: Text(body.toString().trim())),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fechar'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Tela 16 — créditos, referências e transparência.
@@ -1667,6 +1623,7 @@ class MutationCreditsStepView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final controller = context.watch<MutationController>();
+    final game = context.watch<GameController>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1774,8 +1731,8 @@ class MutationCreditsStepView extends StatelessWidget {
           box: InfoBox(
             title: 'Sua jornada, ${controller.displayName}',
             text:
-                'Tempo: ${_formatDuration(controller.elapsed)} · Teste final: '
-                '${controller.quizCorrect}/${controller.quizTotal}. O progresso '
+                'Tempo: ${_formatDuration(controller.elapsed)} · Batalhas: '
+                '${game.battlesWon}/${game.battleTotal}. O progresso '
                 'fica salvo neste aparelho.',
           ),
           color: AppColors.teal,
