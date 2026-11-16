@@ -83,14 +83,27 @@ fechamento do app.
 
 ```bash
 flutter pub get
-flutter run -d emulator-5554
+flutter run -d emulator-5554   # Android
+flutter run -d chrome          # navegador
 ```
 
-Android apenas nesta versão. O progresso é salvo com `shared_preferences`: as
+O app roda no Android e no navegador. O progresso é salvo com `shared_preferences`: as
 fases concluídas e também as conversas em andamento. Se o app for fechado no
 meio de uma fase, ao reabrir a conversa retoma no mesmo nó, com as mensagens e o
 placar do teste final preservados. A lista marca essas fases como
 “Em andamento”.
+
+## Publicar na web (Netlify)
+
+O site é publicado a partir de `build/web`. Para gerar localmente:
+
+```bash
+flutter build web --release --no-web-resources-cdn
+```
+
+No Netlify não é preciso configurar nada no painel: `netlify.toml` define o
+comando de build (`tool/netlify_build.sh`, que instala o Flutter 3.47.8) e a
+pasta publicada. Cada push na branch `main` gera um novo deploy.
 
 ## Estrutura
 
