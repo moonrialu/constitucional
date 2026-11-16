@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.luiza.assessora_stf_cards"
+    namespace = "br.com.grupodabaiana.grupo_da_baiana"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.luiza.assessora_stf_cards"
+        applicationId = "br.com.grupodabaiana.grupo_da_baiana"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

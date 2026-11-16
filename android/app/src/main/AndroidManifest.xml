@@ -1,17 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="Assessora do STF — Baralho"
+        android:label="Mutação Constitucional"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <!-- Impeller, no emulador com GPU Intel/Mesa, está compondo quadros
-             deslocados (texto duplicado/fora de escala). O backend Skia
-             renderiza corretamente. -->
-        <meta-data
-            android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="false" />
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="sensorLandscape"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""

@@ -1,26 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
-import 'engine/game_controller.dart';
-import 'engine/mutation_controller.dart';
-import 'services/mutation_store.dart';
+import 'data/game_script.dart';
 import 'services/progress_store.dart';
+import 'state/game_controller.dart';
+import 'theme/app_colors.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // A jornada acontece inteira em paisagem: a mesa de cartas precisa da
-  // largura, não da altura.
-  await SystemChrome.setPreferredOrientations(const [
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: AppColors.sand,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
 
-  final controller = GameController(SharedPrefsProgressStorage());
-  final mutation = MutationController(SharedPrefsMutationStorage());
-  await Future.wait([controller.load(), mutation.load()]);
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final GameController controller = GameController(
+    store: ProgressStore(prefs),
+    contacts: gameContacts,
+    scripts: gameScripts,
+  );
+  await controller.load();
 
-  runApp(OvaApp(controller: controller, mutation: mutation));
+  runApp(BaianaApp(controller: controller));
 }

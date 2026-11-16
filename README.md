@@ -1,296 +1,138 @@
-# Assessora do STF por um dia — Mutação constitucional (v2.0)
+# Mutação Constitucional
 
-OVA de Direito Constitucional I (Faculdade Baiana de Direito, 2026.2) em
-**paisagem**, com dois modos:
+Jogo narrativo em formato de conversa para alunos de Direito. O jogador é
+assessor(a) no gabinete de um ministro do STF e precisa atravessar quatro
+processos sobre **mutação constitucional** — a mudança de sentido da
+Constituição sem alteração do texto.
 
-1. **Jornada de mutação constitucional** (principal): onboarding com o nome e
-   o avatar do estudante, treinamento em estilo *visual novel* com seis mentores
-   e, em seguida, cinco batalhas de cartas, diagnóstico e créditos, em 12 telas.
-2. **Baralho de argumentos** (extra): o jogo de cartas original, com cinco
-   batalhas sobre regras, princípios e mutação.
+Conteúdo baseado no roteiro do OVA 2 — *Mutação constitucional no gabinete do
+STF* (Direito Constitucional I, Faculdade Baiana de Direito, 2026.2).
 
-Esta é a **versão 2.0**, em projeto separado. A v1.0 permanece intacta em
-`/home/luiza/Projetos/meu_app` como backup. As duas podem ficar instaladas no
-mesmo aparelho:
+## As fases
 
-| | v1.0 | v2.0 |
-|---|---|---|
-| Pasta | `meu_app` | `meu_app_v2` |
-| Pacote Dart | `meu_app` | `assessora_stf_cards` |
-| applicationId | `com.luiza.meu_app` | `com.luiza.assessora_stf_cards` |
-| Save | `ova_stf_progress_v1` | `ova_stf_cards_progress_v1` + `ova_mutacao_progress_v1` |
-| Orientação | livre | paisagem |
+0. **Sala de Dúvidas** — grupo de consulta permanente, disponível desde o
+   início. Reúne a explicação de todos os temas (texto x norma, mutação x
+   reforma, meios, casos do STF e limites) e não conta como fase.
+1. **Grupo do Gabinete** — a missão e a pergunta que atravessa o jogo.
+2. **Ministro** — conversa de alto risco: uma posição técnica imediata sobre a união estável (ADPF 132 e ADI 4277). Errar custa 25% de prestígio; prestígio zerado gera o **Decreto de Exoneração**.
+3. **Bruno** — minigame de cartas: três situações para classificar com cronômetro (reforma, mutação ou mutação inconstitucional).
+4. **Grupo de Estudos** — texto x norma, mutação x reforma e os meios da mutação.
+5. **Dra. Helena** — revisão do rascunho: o grupo precisa marcar os balões falsos do resumo sobre mutação antes que o Ministro veja.
+6. **Profa. Lúcia** — Caso 4: o “voto secreto” reinterpretado e o debate da segunda instância, com a liberação da banca.
+7. **Banca do Ministro** — teste final de 5 questões, com diagnóstico por desempenho e o **encerramento do treinamento**, com a efetivação como Assessor(a) do STF.
 
-## Jornada de mutação constitucional
+Cada fase é desbloqueada ao concluir a anterior. A **Sala de Dúvidas** é a
+exceção: fica aberta desde o primeiro acesso, não entra na contagem de
+progresso e funciona como material de consulta durante toda a jornada. Algumas
+conversas são individuais; outras são grupos, com o nome e o retrato de quem
+fala em cada mensagem. A
+resposta do jogador é sempre uma lista de falas fixas para escolher. O campo de
+texto livre já existe e é enviado de verdade, mas hoje não avança a fase — é o
+gancho para um futuro modelo local.
 
-O roteiro segue a lógica **onboarding → treinamento → prática**:
+## Gamificação
 
-```
-onboarding (nome + avatar) → capa → objetivos
-  → treinamento 1 (texto × norma)
-  → treinamento 2 (mutação × reforma × meios)
-  → treinamento 3 (limites da mutação) → “Jogar agora”
-  → batalha 1 → batalha 2 → batalha 3 → batalha 4 → batalha 5
-  → diagnóstico → créditos
-```
+No topo do chat, a barra de status acompanha o expediente:
 
-O botão final do treinamento já entra direto na primeira batalha, sem etapa
-intermediária. As cinco batalhas usam as objeções e os casos do roteiro, e o
-diagnóstico final considera o desempenho nos duelos.
+- **Cafés (vidas):** existem nos jogos de respostas (cartas do Bruno, Banca do
+  Ministro) e na conversa de alto risco com o Ministro. O jogador começa com 3
+  xícaras e cada erro apaga uma. Ao chegar a zero, o chat é bloqueado pelo
+  modal “Seu cérebro travou!”, com o botão **Recarregar Cafés (Revisar)**, que
+  recarrega as xícaras e abre a Sala de Dúvidas.
+- **Prestígio no Gabinete (0–100%):** sobe +15 em respostas técnicas, +5 em
+  respostas informais e cai −10 em erros conceituais. No teste, cada acerto
+  também rende um elogio de um dos personagens da banca. A consulta permanente
+  não altera o prestígio.
+- **Alto risco (Ministro):** errar a interpretação custa **−25 de prestígio e
+  1 café**, com bronca imediata. Se o prestígio chegar a 0 durante a conversa,
+  o chat trava e abre a tela vermelha do **Decreto de Exoneração**, com o botão
+  **Refazer Treinamento (Voltar ao Grupo 1)**, que zera o progresso e recomeça
+  no Grupo do Gabinete. Acertar rende +15, o reconhecimento do Ministro e
+  libera o chat do Bruno.
+- **Combo 🔥:** dois acertos técnicos seguidos (inclusive fora do teste)
+  acendem o selo “2x COMBO”, que pulsa enquanto a sequência continua. Um erro
+  zera a sequência.
+- **Reações nos balões:** um segundo depois de cada escolha, os outros
+  participantes reagem à mensagem do jogador com emojis flutuantes no canto
+  inferior do balão — ❤️ e 👏 para acertos, 👀 e 😂 para respostas parciais,
+  😱 e 💀 para erros.
+- **Cartas jurídicas (Bruno):** no chat do Bruno, a triagem vira um deck de
+  cartas com cronômetro regressivo. A barra do tempo fica vermelha nos
+  últimos 3 segundos; acertar pinta a carta de verde, soma +15 de prestígio e
+  arranca um elogio do Bruno. Errar ou deixar zerar pinta a carta de vermelho,
+  treme, custa 1 café e −10 de prestígio, e o Bruno explica o erro antes da
+  próxima carta.
+- **Revisão do rascunho (Dra. Helena):** o grupo recebe seis balões com o
+  resumo que o estagiário antigo deixou. O jogador toca nos balões falsos para
+  marcá-los com o selo “FALSO · APAGAR 🗑️” e ganha +10 de prestígio por
+  acerto. Se tocar em uma informação verdadeira, a Profa. Lúcia reage com
+  “Ei, essa parte tava certa! 👀” e o jogador perde 1 café. Ao marcar todos os
+  falsos, a Helena fecha a revisão e a fase é concluída.
+- **Encerramento seguro (Banca do Ministro):** ao responder à última interação
+  do teste final, o jogo não tenta carregar uma nova pergunta. O estado de
+  treinamento concluído é ativado antes da transição, as reações pendentes são
+  ignoradas e o app abre o card de efetivação: “🎉 PARABÉNS! VOCÊ FOI
+  EFETIVADO!”, com o Prestígio final, os cafés restantes, o aproveitamento da
+  banca, o botão **Reiniciar jogo** e a opção de voltar para as conversas. O
+  selo “ASSESSOR(A) EFETIVADO(A) · STF” passa a aparecer na lista.
 
-### Onboarding
+Cafés, prestígio e combo são salvos junto com o progresso e sobrevivem ao
+fechamento do app.
 
-Na primeira abertura, o app pede o nome e o avatar antes de liberar a jornada.
-O nome é salvo no aparelho, normalizado (espaços extras removidos) e passa a
-aparecer nos balões dos mentores, no título das perguntas, no diagnóstico e nos
-créditos. O avatar usa os retratos do grupo em `assets/mentors/`: a escolha é
-persistida e aparece na capa, na mesa de batalha e no perfil. Na capa, a saudação
-“Olá, {nome}” tem um lápis para editar o nome e trocar o avatar a qualquer
-momento. Sem nome salvo, o onboarding volta a ser exibido.
-
-### Fase de treinamento (visual novel)
-
-Três atos conduzidos pelos seis mentores — **Amanda, Ian, Gabriel, Luiza,
-Rafael e Paola** — em balões de diálogo que avançam ao tocar na cena:
-
-- **Ato 1 — Texto não é norma**: texto × norma, partitura e música,
-  concretização (Müller), regras × princípios, *Verfassungswandlung* e a
-  definição de mutação.
-- **Ato 2 — Mutação, reforma e os meios**: reforma (art. 60) × mutação ×
-  interpretação comum; os três meios (judicial, legislativo e costume); o
-  debate do art. 52, X (Rcl 4335, ADIs 3406/3470).
-- **Ato 3 — Os limites da mutação**: texto, princípios e cláusulas pétreas,
-  separação de Poderes, mutação inconstitucional e o caso da segunda
-  instância.
-
-Cada ato termina em um **resumo didático** com os pontos essenciais. O estudante
-pode voltar falas, rever o diálogo inteiro e só então seguir para o próximo ato.
-O texto dos diálogos fica em `lib/data/training_dialogue.dart` e usa `{nome}`
-para ser personalizado.
-
-### Prática e avaliação
-
-- **4 casos** com feedback específico para cada alternativa, inclusive as
-  erradas.
-- **11 interações**: Caso 1, três situações do Caso 2, Caso 3, Caso 4 e cinco
-  questões do teste final.
-- **2 aplicações práticas**: o papel do Senado (art. 52, X) e o “voto secreto”
-  reinterpretado como mutação inconstitucional.
-- **Diagnóstico** por faixa de acerto, com recomendação e atalho de revisão para
-  cada questão errada; a revisão das questões teóricas abre o resumo do ato
-  correspondente.
-- **Progresso salvo** a cada resposta; “Continuar” retoma a tela exata.
-
-O conteúdo fica isolado em `lib/data/mutation_content.dart` (casos e teste) e
-`lib/data/training_dialogue.dart` (mentores e treinamento); a jornada é montada
-a partir de `mutationFlow`, sem conteúdo preso às telas.
-
-## A batalha de cartas
-
-O modo extra transforma cada caso em um duelo contra uma tese adversa, com
-dificuldade fácil e possibilidade de refazer a partida:
-
-- **Convicção**: a assessora começa com 30 pontos e a tese adversa com 10–14.
-  Zerar a da tese vence; zerar a sua permite **refazer a batalha** (não há game
-  over).
-- **Energia**: 4 por turno; mão de 5 cartas; baralho de 10; descarte
-  reembaralhado quando o monte acaba.
-- **Tipos de carta**: ataque (dano), defesa (bloqueio) e apoio (compra carta,
-  devolve energia).
-- **Objeções**: cada turno a máquina ataca com uma objeção de 2–3 pontos de
-  dano, tirada das alternativas incorretas do caso. A objeção indica o
-  fundamento que a refuta (`Regra`, `Princípio`, `Mutação`, `Precedente`,
-  `Competência`...). Jogar uma carta com a tag certa **refuta** o ataque (dano
-  zero no turno) e dá **+3** de bônus.
-- **Mão e leitura**: as cartas aparecem inteiras na mão. Um único toque já joga
-  a carta; as que refutam a objeção atual ficam destacadas em dourado com a
-  etiqueta **REFUTA**. A carta voa da mão até o campo de batalha antes de o
-  efeito ser aplicado.
-- **Oponente do grupo**: cada batalha tem um mentor do grupo interpretando a
-  tese adversa (`opponentMentorId`), com retrato e nome no painel lateral.
-- **Relatório pós-batalha**: ao vencer, o app mostra o feedback jurídico
-  completo da alternativa correta, o precedente e as cartas recém-liberadas.
-
-### Animações
-
-Distribuição da mão em cascata, flip da objeção a cada turno, elevação das
-cartas selecionadas, voo da carta (ou do conjunto, em cascata) até a objeção,
-banner da jogada, número de dano flutuante e transições de baralho/mão. Tudo respeita `MediaQuery.disableAnimations`? As durações são
-curtas (120–650 ms) e não bloqueiam a jogada.
-
-### Mapa mental interativo
-
-Uma tela separada da jornada resume a **mutação constitucional** em um mapa
-mental navegável: nós tocáveis (texto × norma, mutação × reforma, meios,
-limites e cláusulas pétreas, casos práticos), linhas animadas entre os ramos e
-uma pergunta de fixação com resposta comentada. O mapa é aberto pela capa, pelo
-menu do gabinete (item **Mapa mental interativo**) e pela barra superior da
-jornada, sem interromper o progresso salvo.
-
-## Fluxo do modo cartas
-
-```
-cover → battle1 → battle2 → battle3 → battle4 → battle5
-```
-
-- **battle1..battle5**: Casos 1–5 do roteiro, em duelos de cartas.
-- A jornada de mutação é independente e tem o fluxo próprio descrito acima.
-
-## Coleção e desbloqueio
-
-São **44 cartas**, cumulativas. Vencer batalhas e concluir o teste liberam
-fundamentos e precedentes (ADI 4815, ADPF 132, ADI 4277, MS 32.033, Rcl 4335).
-A coleção fica no menu do gabinete e no painel.
-
-## Como rodar
+## Rodar
 
 ```bash
 flutter pub get
-flutter run          # trava em paisagem ao iniciar
+flutter run -d emulator-5554
 ```
 
-APK de debug:
-
-```bash
-flutter build apk --debug
-# build/app/outputs/flutter-apk/app-debug.apk
-```
-
-Instalar lado a lado com a v1:
-
-```bash
-adb install -r build/app/outputs/flutter-apk/app-debug.apk
-adb shell am start -n com.luiza.assessora_stf_cards/.MainActivity
-```
-
-## Testes
-
-```bash
-flutter analyze   # limpo
-flutter test      # 55 testes: motor de batalha, jornada de mutação, onboarding,
-                  # treinamento em visual novel e renderização das telas
-```
+Android apenas nesta versão. O progresso é salvo com `shared_preferences`: as
+fases concluídas e também as conversas em andamento. Se o app for fechado no
+meio de uma fase, ao reabrir a conversa retoma no mesmo nó, com as mensagens e o
+placar do teste final preservados. A lista marca essas fases como
+“Em andamento”.
 
 ## Estrutura
 
 ```
 lib/
-  main.dart, app.dart           # bootstrap, paisagem, tema, Providers
-  models/
-    card.dart                   # ArgumentCard, CardKind, CardTag
-    battle.dart                 # BattleConfig, Objection, BattleRecord, log
-    content.dart                # casos, teoria, checks, quiz (modo cartas)
-    mutation.dart               # tipos e progresso da jornada de mutação
-    progress.dart               # save v3 (batalhas, cartas, visited, quiz)
-  data/
-    mutation_content.dart       # casos, check, quiz, diagnóstico e créditos
-    training_dialogue.dart      # seis mentores e os três atos do treinamento
-    cards.dart                  # catálogo de 44 cartas + desbloqueios
-    battles.dart                # 5 batalhas: baralhos e objeções
-    cases.dart                  # casos e feedbacks (fonte do relatório)
-    checks.dart, theory.dart, quiz.dart, glossary.dart, badges.dart
-    flow.dart                   # ordem linear do modo cartas
-  engine/
-    mutation_controller.dart    # telas, nome, respostas, pontuação e auto-save
-    battle_engine.dart          # motor puro: turnos, energia, refutação
-    game_controller.dart        # fluxo do baralho, desbloqueios, badges
-  screens/
-    mutation_journey_screen.dart # casca das 12 telas + top bar
-    mutation_steps.dart          # capa, casos, check, quiz, diagnóstico
-    training_step.dart           # treinamento em visual novel (balões)
-    onboarding_screen.dart       # entrada do nome + escolha de avatar
-    battle_screen.dart           # mesa em paisagem + relatório
-    mind_map_screen.dart         # mapa mental interativo da mutação
-    collection_screen.dart       # coleção de cartas
-    cover_screen.dart, glossary_screen.dart, root_router.dart
-  widgets/
-    mentor_avatar.dart           # retrato circular dos mentores do grupo
-    avatar_picker.dart           # seletor de avatar reutilizável
-    mutation_widgets.dart        # cartões, tabela, linha do tempo, botões
-    card_view.dart               # face/verso da carta
-    theory_sheet.dart            # teoria em diálogo durante a batalha
-    app_menu, game_scaffold...
-  utils/
-    personalize.dart             # substituição de {nome} nos diálogos
+  data/game_script.dart        roteiro completo: contatos, nós e escolhas
+  models/                      contato, mensagem, nó e escolha
+  state/game_controller.dart   progresso, desbloqueio, fluxo do chat e placar
+  services/
+    progress_store.dart        persistência das fases concluídas e conversas
+    reply_strategy.dart        interface + respostas roteirizadas
+  screens/                     lista de contatos e tela de chat
+  widgets/                     barra de status, bolhas, escolhas, input, avatar
+  theme/                       paleta terrosa e tipografia
 ```
 
-Os dois modos são **dado + motor**: para alterar a aula, edite
-`lib/data/mutation_content.dart`; para criar uma batalha, inclua um
-`BattleConfig` em `lib/data/battles.dart` e as cartas em `lib/data/cards.dart`.
+## Editar a história
 
-## Persistência
+Todo o texto está em `lib/data/game_script.dart`. Cada contato aponta para um
+`ChatScript` com nós; cada nó tem mensagens recebidas e escolhas. Uma escolha
+com `nextNodeId` nulo encerra a fase e desbloqueia a próxima. No teste final,
+cada questão marca a alternativa correta com `isCorrect: true`. Fora do teste,
+`style: AnswerStyle.informal` vale +5 de prestígio e `style: AnswerStyle.wrong`
+marca erro conceitual (−10 e zera o combo); sem `style`, a escolha conta como
+técnica (+15). Um nó com `card:` vira uma carta jurídica cronometrada: as
+escolhas são os três botões, `isCorrect` marca a alternativa certa e
+`timeoutLine`/`timeoutNextNodeId` definem o que acontece quando o tempo zera.
+Um nó com `inspection:` vira o jogo de marcar balões falsos: cada
+`DraftStatement` indica se é erro conceitual, e `successLines` são enviadas
+quando todos os falsos forem marcados.
 
-A jornada de mutação usa a chave **`ova_mutacao_progress_v1`**:
+## Referências do conteúdo
 
-```json
-{
-  "version": 3,
-  "userName": "Ana",
-  "avatarId": "amanda",
-  "stepIndex": 4,
-  "startedAt": "2026-10-24T12:52:42",
-  "finishedAt": null,
-  "caseAnswers": {"case1": "B", "case3": "B"},
-  "checkAnswers": {"check2/s1": "R", "check2/s2": "M"},
-  "quizAnswers": {"q1": "B"}
-}
-```
+- BRASIL. Constituição da República Federativa do Brasil de 1988.
+- FERRAZ, Anna Cândida da Cunha. *Processos informais de mudança da Constituição*. São Paulo: Max Limonad, 1986.
+- HESSE, Konrad. *A força normativa da Constituição*. Porto Alegre: Sergio Antonio Fabris.
+- MÜLLER, Friedrich. *Teoria estruturante do direito*. São Paulo: Revista dos Tribunais.
+- MENDES, Gilmar Ferreira; BRANCO, Paulo Gustavo Gonet. *Curso de direito constitucional*. São Paulo: Saraiva.
+- STF: ADPF 132 e ADI 4277 (2011); Rcl 4335/AC (2014); ADIs 3406 e 3470 (2017); HC 84.078 (2009); HC 126.292 (2016); ADCs 43, 44 e 54 (2019).
 
-Saves da versão 1 (sem `userName`) e da versão 2 (sem `avatarId`) são lidos e
-migrados automaticamente para a versão 3; o avatar volta a ser pedido no
-onboarding quando estiver vazio.
+## Próximo passo: modelo local
 
-O modo cartas usa a chave **`ova_stf_cards_progress_v1`**, em JSON versionado:
-
-```json
-{
-  "version": 3,
-  "currentStep": "battle3",
-  "startedAt": "2026-10-24T12:52:42",
-  "finishedAt": null,
-  "battles": {
-    "battle1": {
-      "won": true, "attempts": 2, "turns": 4, "convictionLeft": 11,
-      "refutations": 3, "cardsPlayed": 7, "finishedAt": "..."
-    }
-  },
-  "unlockedCards": ["subsuncao", "ponderacao", "adi-4815"],
-  "visited": ["cover", "objectives", "battle1", "theory1"],
-  "quizAnswers": {"q2": "B"},
-  "checkAnswers": {"check1/c1-1": "R"},
-  "quizIds": ["q1", "q2", "q3", "q5", "q6", "q8"],
-  "badges": ["primeiro-parecer", "refutador"],
-  "history": [{"finishedAt": "...", "battlesWon": 5, "battlesTotal": 5,
-               "quizScore": 5, "quizTotal": 6, "elapsedMs": 120000}]
-}
-```
-
-O save da v2 é independente do save da v1; não há migração entre versões.
-Fechar o app no meio de uma batalha retoma na batalha (o duelo recomeça, mas a
-tentativa fica registrada).
-
-## Próxima fase (v2.1)
-
-- Persistir o estado exato da batalha (mão, monte e convicção) entre sessões.
-- Trilha sonora opcional e efeitos de carta.
-- Ícone próprio da v2 (carta + balança) para diferenciar da v1 no launcher.
-- Modo "rever batalha" sem contar tentativa.
-- Vozes ou retratos ilustrados para os seis mentores no treinamento.
-
-## Marca e créditos
-
-Ícone e splash usam a balança da justiça em creme sobre azul-marinho, com
-destaque dourado (mesma marca da v1 nesta etapa). Fontes vetoriais em
-`assets/branding/`.
-
-Equipe e referências aparecem na tela de créditos; os seis mentores do
-treinamento são também os integrantes do grupo (Amanda, Ian, Gabriel, Luiza,
-Rafael e Paola).
-
-## Nota de ambiente
-
-No emulador com GPU Intel/Mesa aparece, em algumas capturas, um artefato de
-composição (texto duplicado, inclusive na barra de status). É um problema do
-compositor do emulador, não do layout do app: reabrir a tela ou capturar de novo
-mostra o conteúdo correto. Vale conferir em aparelho físico antes de tratar como
-bug de interface.
+`ReplyStrategy` em `lib/services/reply_strategy.dart` é o ponto de extensão.
+Basta implementar a interface com o modelo local e injetar no `GameController`
+em `lib/main.dart`, sem alterar telas ou widgets.
